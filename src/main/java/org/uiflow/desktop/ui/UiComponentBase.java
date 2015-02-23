@@ -1,4 +1,4 @@
-package org.uiflow.desktop;
+package org.uiflow.desktop.ui;
 
 import javax.swing.*;
 
