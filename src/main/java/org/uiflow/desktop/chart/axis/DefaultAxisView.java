@@ -8,6 +8,7 @@ import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.ArrayList;
 
 import static org.flowutils.Check.notNull;
 
@@ -29,41 +30,38 @@ public class DefaultAxisView<T extends Number> extends RenderableUiComponent imp
     private Font labelFont;
     private int margin = DEFAULT_MARGIN;
 
-    private String axisName;
+    private final Axis axis;
     private T firstVisible;
     private T lastVisible;
     private int numberOfTicks = DEFAULT_NUMBER_OF_TICKS;
     private AxisOrientation orientation;
     private AxisProjection<T> projection;
+    private final ArrayList<AxisViewListener> listeners = new ArrayList<AxisViewListener>();
 
 
-    public DefaultAxisView() {
-        this("");
+    public DefaultAxisView(Axis axis) {
+        this(axis, null, null);
     }
 
-    public DefaultAxisView(String axisName) {
-        this(axisName, null, null);
-    }
-
-    public DefaultAxisView(String axisName,
+    public DefaultAxisView(Axis axis,
                            T firstVisible,
                            T lastVisible) {
-        this(axisName, firstVisible, lastVisible, AxisOrientation.HORIZONTAL_BOTTOM);
+        this(axis, firstVisible, lastVisible, AxisOrientation.HORIZONTAL_BOTTOM);
     }
 
-    public DefaultAxisView(String axisName,
+    public DefaultAxisView(Axis axis,
                            T firstVisible,
                            T lastVisible,
                            AxisOrientation orientation) {
-        this(axisName, firstVisible, lastVisible, orientation, (AxisProjection<T>) LinearAxisProjection.LINEAR_AXIS_PROJECTION);
+        this(axis, firstVisible, lastVisible, orientation, (AxisProjection<T>) LinearAxisProjection.LINEAR_AXIS_PROJECTION);
     }
 
-    public DefaultAxisView(String axisName,
+    public DefaultAxisView(Axis axis,
                            T firstVisible,
                            T lastVisible,
                            AxisOrientation orientation,
                            AxisProjection<T> projection) {
-        this.axisName = axisName;
+        this.axis = axis;
         this.firstVisible = firstVisible;
         this.lastVisible = lastVisible;
         this.orientation = orientation;
@@ -72,31 +70,39 @@ public class DefaultAxisView<T extends Number> extends RenderableUiComponent imp
         setRenderable(this);
     }
 
-    public String getAxisName() {
-        return axisName;
+    public Axis getAxis() {
+        return axis;
     }
 
     public final T getFirstVisible() {
         return firstVisible;
     }
 
-    @Override public final void setFirstVisible(T firstVisible) {
-        notNull(firstVisible, "firstVisible");
-        this.firstVisible = firstVisible;
-    }
-
     public final T getLastVisible() {
-        notNull(lastVisible, "lastVisible");
         return lastVisible;
     }
 
-    @Override public final void setLastVisible(T lastVisible) {
-        this.lastVisible = lastVisible;
+    @Override public final void setFirstVisible(T firstVisible) {
+        notNull(firstVisible, "firstVisible");
+        this.firstVisible = firstVisible;
+
+        notifyRangeUpdated();
     }
 
-    @Override public final void setVisibleRange(T first, T last) {
-        setFirstVisible(first);
-        setLastVisible(last);
+    @Override public final void setLastVisible(T lastVisible) {
+        notNull(lastVisible, "lastVisible");
+        this.lastVisible = lastVisible;
+
+        notifyRangeUpdated();
+    }
+
+    @Override public final void setVisibleRange(T firstVisible, T lastVisible) {
+        notNull(firstVisible, "firstVisible");
+        notNull(lastVisible, "lastVisible");
+        this.firstVisible = firstVisible;
+        this.lastVisible = lastVisible;
+
+        notifyRangeUpdated();
     }
 
     public final AxisProjection<T> getProjection() {
@@ -160,6 +166,15 @@ public class DefaultAxisView<T extends Number> extends RenderableUiComponent imp
     @Override public final void setTickColor(Color tickColor) {
         notNull(tickColor, "tickColor");
         this.tickColor = tickColor;
+    }
+
+    @Override public void addListener(AxisViewListener listener) {
+        notNull(listener, "listener");
+        listeners.add(listener);
+    }
+
+    @Override public void removeListener(AxisViewListener listener) {
+        listeners.remove(listener);
     }
 
     public Color getOutlineColor() {
@@ -318,5 +333,10 @@ public class DefaultAxisView<T extends Number> extends RenderableUiComponent imp
         }
     }
 
+    private void notifyRangeUpdated() {
+        for (AxisViewListener listener : listeners) {
+            listener.onVisibleAreaChanged(axis, firstVisible, lastVisible);
+        }
+    }
 
 }

@@ -1,6 +1,7 @@
 package org.uiflow.desktop.chart;
 
 import org.uiflow.desktop.chart.axis.AxisView;
+import org.uiflow.desktop.chart.chartlayer.ChartLayer;
 import org.uiflow.desktop.ui.Renderable;
 import org.uiflow.desktop.ui.UiComponent;
 
