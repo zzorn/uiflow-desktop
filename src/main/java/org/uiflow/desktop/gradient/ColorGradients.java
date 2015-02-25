@@ -1,6 +1,5 @@
 package org.uiflow.desktop.gradient;
 
-import org.flowutils.gradient.ColorGradient;
 
 /**
  * Utility class with some common color gradients.

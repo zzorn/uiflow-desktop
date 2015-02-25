@@ -1,6 +1,5 @@
 package org.uiflow.desktop.gradient;
 
-import org.flowutils.gradient.ColorFunction;
 
 import java.awt.*;
 import java.util.Map;

@@ -1,0 +1,272 @@
+package org.uiflow.desktop.chart.axis;
+
+import org.flowutils.Check;
+import org.flowutils.MathUtils;
+import org.uiflow.desktop.ui.RenderableUiComponent;
+
+import java.awt.*;
+import java.awt.geom.Rectangle2D;
+
+import static org.flowutils.Check.notNull;
+
+/**
+ * A view utility for rendering an axis.
+ */
+public class DefaultAxisView<T extends Number> extends RenderableUiComponent implements AxisView<T> {
+
+    protected static final int DEFAULT_NUMBER_OF_TICKS = 10;
+    private static final int DEFAULT_MARGIN = 4;
+    private static final String MINIMUM_VISIBLE_LABEL = "888888";
+
+    private Color backgroundColor = new Color(0,0,0);
+    private Color tickColor = new Color(200, 200, 200);
+    private Color labelColor = new Color(230, 230, 230);
+    private Font labelFont;
+    private int margin = DEFAULT_MARGIN;
+
+    private String axisName;
+    private T firstVisible;
+    private T lastVisible;
+    private int numberOfTicks = DEFAULT_NUMBER_OF_TICKS;
+    private AxisOrientation orientation;
+    private AxisProjection<T> projection;
+
+
+    public DefaultAxisView() {
+        this("");
+    }
+
+    public DefaultAxisView(String axisName) {
+        this(axisName, null, null);
+    }
+
+    public DefaultAxisView(String axisName,
+                           T firstVisible,
+                           T lastVisible) {
+        this(axisName, firstVisible, lastVisible, AxisOrientation.HORIZONTAL_BOTTOM);
+    }
+
+    public DefaultAxisView(String axisName,
+                           T firstVisible,
+                           T lastVisible,
+                           AxisOrientation orientation) {
+        this(axisName, firstVisible, lastVisible, orientation, (AxisProjection<T>) LinearAxisProjection.LINEAR_AXIS_PROJECTION);
+    }
+
+    public DefaultAxisView(String axisName,
+                           T firstVisible,
+                           T lastVisible,
+                           AxisOrientation orientation,
+                           AxisProjection<T> projection) {
+        this.axisName = axisName;
+        this.firstVisible = firstVisible;
+        this.lastVisible = lastVisible;
+        this.orientation = orientation;
+        this.projection = projection;
+
+        setRenderable(this);
+    }
+
+    public String getAxisName() {
+        return axisName;
+    }
+
+    public final T getFirstVisible() {
+        return firstVisible;
+    }
+
+    @Override public final void setFirstVisible(T firstVisible) {
+        notNull(firstVisible, "firstVisible");
+        this.firstVisible = firstVisible;
+    }
+
+    public final T getLastVisible() {
+        notNull(lastVisible, "lastVisible");
+        return lastVisible;
+    }
+
+    @Override public final void setLastVisible(T lastVisible) {
+        this.lastVisible = lastVisible;
+    }
+
+    @Override public final void setVisibleRange(T first, T last) {
+        setFirstVisible(first);
+        setLastVisible(last);
+    }
+
+    public final AxisProjection<T> getProjection() {
+        return projection;
+    }
+
+    public final void setProjection(AxisProjection<T> projection) {
+        this.projection = projection;
+    }
+
+    public final int getNumberOfTicks() {
+        return numberOfTicks;
+    }
+
+    public final void setNumberOfTicks(int numberOfTicks) {
+        Check.positiveOrZero(numberOfTicks, "numberOfTicks");
+        this.numberOfTicks = numberOfTicks;
+    }
+
+    public final AxisOrientation getOrientation() {
+        return orientation;
+    }
+
+    public final void setOrientation(AxisOrientation orientation) {
+        notNull(orientation, "orientation");
+        this.orientation = orientation;
+    }
+
+    @Override public final T getAxisValue(int coordinate, int startCoordinate, int endCoordinate) {
+        double relativeAxisPos = MathUtils.map(coordinate, startCoordinate, endCoordinate, 0.0, 1.0);
+        return projection.getAxisValue(relativeAxisPos, getFirstVisible(), getLastVisible());
+    }
+
+    @Override public final int getVisibleLocation(T axisValue, int startCoordinate, int endCoordinate) {
+        final double relativeLocation = projection.getVisibleLocation(axisValue, getFirstVisible(), getLastVisible());
+        return (int) MathUtils.mix(relativeLocation, startCoordinate, endCoordinate);
+    }
+
+    @Override public final Color getBackgroundColor() {
+        return backgroundColor;
+    }
+
+    @Override public final void setBackgroundColor(Color backgroundColor) {
+        notNull(backgroundColor, "backgroundColor");
+        this.backgroundColor = backgroundColor;
+    }
+
+    @Override public final Color getLabelColor() {
+        return labelColor;
+    }
+
+    @Override public final void setLabelColor(Color labelColor) {
+        notNull(labelColor, "labelColor");
+        this.labelColor = labelColor;
+    }
+
+    @Override public final Color getTickColor() {
+        return tickColor;
+    }
+
+    @Override public final void setTickColor(Color tickColor) {
+        notNull(tickColor, "tickColor");
+        this.tickColor = tickColor;
+    }
+
+    public Font getLabelFont() {
+        return labelFont;
+    }
+
+    public void setLabelFont(Font labelFont) {
+        notNull(labelFont, "labelFont");
+        this.labelFont = labelFont;
+    }
+
+    public int getMargin() {
+        return margin;
+    }
+
+    public void setMargin(int margin) {
+        this.margin = margin;
+    }
+
+    @Override public void calculatePreferredArea(Rectangle availableArea, Rectangle preferredAreaOut, Graphics2D g2) {
+        notNull(availableArea, "availableArea");
+        notNull(preferredAreaOut, "preferredAreaOut");
+
+        ensureLabelFontAvailable(g2);
+
+        final Rectangle2D stringBounds = labelFont.getStringBounds(MINIMUM_VISIBLE_LABEL, g2.getFontRenderContext());
+        int minX = (int) stringBounds.getWidth() + 2*margin;
+        int minY = (int) stringBounds.getHeight() + 2*margin;
+
+        orientation.splitArea(availableArea, preferredAreaOut, minX, minY);
+    }
+
+    @Override public void render(Graphics2D g2, Rectangle axisArea) {
+        ensureLabelFontAvailable(g2);
+
+        // Draw background
+        g2.setColor(backgroundColor);
+        g2.fillRect(axisArea.x, axisArea.y, axisArea.width, axisArea.height);
+        drawLine(g2, axisArea, tickColor, 0, 0, 1, 0);
+
+        System.out.println("axisName = " + axisName);
+        System.out.println("axisArea = " + axisArea);
+
+        if (hasSpecifiedRange()) {
+            for (int i = 0; i < numberOfTicks; i++) {
+                System.out.println("i = " + i);
+                // Determine tick location
+                final T roundAxisValue = getClosestRoundValue(getTickValue(i - 1, numberOfTicks),
+                                                              getTickValue(i, numberOfTicks),
+                                                              getTickValue(i + 1, numberOfTicks));
+
+                final double relativeAxisPos = projection.getVisibleLocation(roundAxisValue,
+                                                                             getFirstVisible(),
+                                                                             getLastVisible());
+
+                System.out.println("roundAxisValue = " + roundAxisValue);
+                System.out.println("relativeAxisPos = " + relativeAxisPos);
+
+                // Draw tick line
+                drawLine(g2, axisArea, tickColor, relativeAxisPos, 0, relativeAxisPos, 0.25);
+
+                // Draw tick label
+                int labelX = orientation.getX(relativeAxisPos, 0.5, axisArea);
+                int labelY = orientation.getY(relativeAxisPos, 0.5, axisArea);
+
+                g2.setColor(labelColor);
+                final Font previousFont = g2.getFont();
+                g2.setFont(labelFont);
+                g2.drawString(createTickLabel(roundAxisValue), labelX, labelY);
+                g2.setFont(previousFont);
+            }
+        }
+    }
+
+    private void ensureLabelFontAvailable(Graphics2D g2) {
+        // Make sure we have a label font
+        if (labelFont == null) {
+            labelFont = g2.getFont();
+        }
+    }
+
+    protected final boolean hasSpecifiedRange() {
+        return firstVisible != null &&
+               lastVisible != null;
+    }
+
+    private void drawLine(Graphics2D g2, Rectangle axisArea,
+                          final Color color,
+                          double axisPos1,
+                          double acrossPos1,
+                          double axisPos2,
+                          double acrossPos2) {
+        int x1 = orientation.getX(axisPos1, acrossPos1, axisArea);
+        int y1 = orientation.getY(axisPos1, acrossPos1, axisArea);
+        int x2 = orientation.getX(axisPos2, acrossPos2, axisArea);
+        int y2 = orientation.getY(axisPos2, acrossPos2, axisArea);
+
+        g2.setColor(color);
+        g2.drawLine(x1, y1, x2, y2);
+    }
+
+    private T getTickValue(int tickIndex, int maxTicks) {
+        double relPos = MathUtils.map(tickIndex, -1, maxTicks, 0, 1);
+        return projection.getAxisValue(relPos, getFirstVisible(), getLastVisible());
+    }
+
+    @Override public String createTickLabel(T value) {
+        return value.toString();
+    }
+
+    @Override public T getClosestRoundValue(T minimumValue, T preferredValue, T maximumValue) {
+        return preferredValue;
+    }
+
+}

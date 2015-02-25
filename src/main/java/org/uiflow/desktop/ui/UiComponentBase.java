@@ -11,6 +11,8 @@ public abstract class UiComponentBase implements UiComponent {
         // Create if needed
         if (ui == null) {
             ui = createUi();
+
+            onUiCreated(ui);
         }
 
         return ui;
@@ -27,5 +29,12 @@ public abstract class UiComponentBase implements UiComponent {
      * @return a new Swing user interface for this class.
      */
     protected abstract JComponent createUi();
+
+    /**
+     * Called when the UI is created.
+     * @param ui the newly created UI.
+     */
+    protected void onUiCreated(JComponent ui) {
+    }
 
 }
