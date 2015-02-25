@@ -6,6 +6,8 @@ import org.uiflow.desktop.ui.RenderableUiComponent;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 
 import static org.flowutils.Check.notNull;
 
@@ -18,7 +20,10 @@ public class DefaultAxisView<T extends Number> extends RenderableUiComponent imp
     private static final int DEFAULT_MARGIN = 4;
     private static final String MINIMUM_VISIBLE_LABEL = "888888";
 
+    private static final NumberFormat NUMBER_FORMAT = new DecimalFormat("#.###");
+
     private Color backgroundColor = new Color(0,0,0);
+    private Color outlineColor = new Color(130, 130, 130);
     private Color tickColor = new Color(200, 200, 200);
     private Color labelColor = new Color(230, 230, 230);
     private Font labelFont;
@@ -157,6 +162,14 @@ public class DefaultAxisView<T extends Number> extends RenderableUiComponent imp
         this.tickColor = tickColor;
     }
 
+    public Color getOutlineColor() {
+        return outlineColor;
+    }
+
+    public void setOutlineColor(Color outlineColor) {
+        this.outlineColor = outlineColor;
+    }
+
     public Font getLabelFont() {
         return labelFont;
     }
@@ -174,17 +187,28 @@ public class DefaultAxisView<T extends Number> extends RenderableUiComponent imp
         this.margin = margin;
     }
 
-    @Override public void calculatePreferredArea(Rectangle availableArea, Rectangle preferredAreaOut, Graphics2D g2) {
+    @Override public void calculateChartArea(Rectangle availableArea, Graphics2D g2) {
         notNull(availableArea, "availableArea");
+        notNull(g2, "g2");
+        orientation.splitArea(availableArea, null, getPreferredThickness_pixels(g2));
+    }
+
+    @Override public void calculatePreferredArea(Rectangle availableArea, Rectangle chartArea, Rectangle preferredAreaOut, Graphics2D g2) {
+        notNull(availableArea, "availableArea");
+        notNull(chartArea, "chartArea");
         notNull(preferredAreaOut, "preferredAreaOut");
+        notNull(g2, "g2");
 
-        ensureLabelFontAvailable(g2);
+        orientation.splitArea(availableArea, preferredAreaOut, getPreferredThickness_pixels(g2));
 
-        final Rectangle2D stringBounds = labelFont.getStringBounds(MINIMUM_VISIBLE_LABEL, g2.getFontRenderContext());
-        int minX = (int) stringBounds.getWidth() + 2*margin;
-        int minY = (int) stringBounds.getHeight() + 2*margin;
-
-        orientation.splitArea(availableArea, preferredAreaOut, minX, minY);
+        if (orientation.isHorizontal()) {
+            preferredAreaOut.x = chartArea.x;
+            preferredAreaOut.width = chartArea.width;
+        }
+        else {
+            preferredAreaOut.y = chartArea.y;
+            preferredAreaOut.height = chartArea.height;
+        }
     }
 
     @Override public void render(Graphics2D g2, Rectangle axisArea) {
@@ -193,14 +217,13 @@ public class DefaultAxisView<T extends Number> extends RenderableUiComponent imp
         // Draw background
         g2.setColor(backgroundColor);
         g2.fillRect(axisArea.x, axisArea.y, axisArea.width, axisArea.height);
-        drawLine(g2, axisArea, tickColor, 0, 0, 1, 0);
-
-        System.out.println("axisName = " + axisName);
-        System.out.println("axisArea = " + axisArea);
+        drawLine(g2, axisArea, outlineColor, 0, 0, 1, 0);
+        drawLine(g2, axisArea, outlineColor, 0, 1, 1, 1);
+        drawLine(g2, axisArea, outlineColor, 0, 0, 0, 1);
+        drawLine(g2, axisArea, outlineColor, 1, 0, 1, 1);
 
         if (hasSpecifiedRange()) {
             for (int i = 0; i < numberOfTicks; i++) {
-                System.out.println("i = " + i);
                 // Determine tick location
                 final T roundAxisValue = getClosestRoundValue(getTickValue(i - 1, numberOfTicks),
                                                               getTickValue(i, numberOfTicks),
@@ -210,23 +233,31 @@ public class DefaultAxisView<T extends Number> extends RenderableUiComponent imp
                                                                              getFirstVisible(),
                                                                              getLastVisible());
 
-                System.out.println("roundAxisValue = " + roundAxisValue);
-                System.out.println("relativeAxisPos = " + relativeAxisPos);
-
                 // Draw tick line
-                drawLine(g2, axisArea, tickColor, relativeAxisPos, 0, relativeAxisPos, 0.25);
+                drawLine(g2, axisArea, tickColor, relativeAxisPos, 0, relativeAxisPos, 0.1);
 
                 // Draw tick label
                 int labelX = orientation.getX(relativeAxisPos, 0.5, axisArea);
                 int labelY = orientation.getY(relativeAxisPos, 0.5, axisArea);
 
-                g2.setColor(labelColor);
-                final Font previousFont = g2.getFont();
-                g2.setFont(labelFont);
-                g2.drawString(createTickLabel(roundAxisValue), labelX, labelY);
-                g2.setFont(previousFont);
+                final String tickLabel = createTickLabel(roundAxisValue);
+                drawText(g2, labelColor, labelFont, labelX, labelY, tickLabel);
             }
         }
+    }
+
+    private void drawText(Graphics2D g2,
+                          final Color color,
+                          final Font labelFont,
+                          int x,
+                          int y,
+                          String text) {
+        g2.setColor(color);
+        final Font previousFont = g2.getFont();
+        g2.setFont(labelFont);
+        final Rectangle2D stringBounds = labelFont.getStringBounds(text, g2.getFontRenderContext());
+        g2.drawString(text, x - (int) stringBounds.getCenterX(), y - (int) stringBounds.getCenterY());
+        g2.setFont(previousFont);
     }
 
     private void ensureLabelFontAvailable(Graphics2D g2) {
@@ -262,11 +293,30 @@ public class DefaultAxisView<T extends Number> extends RenderableUiComponent imp
     }
 
     @Override public String createTickLabel(T value) {
-        return value.toString();
+        if (value instanceof Float ||
+            value instanceof Double) return NUMBER_FORMAT.format(value);
+        else {
+            return value.toString();
+        }
     }
 
     @Override public T getClosestRoundValue(T minimumValue, T preferredValue, T maximumValue) {
         return preferredValue;
     }
+
+    @Override public int getPreferredThickness_pixels(Graphics2D g2) {
+        ensureLabelFontAvailable(g2);
+
+        final Rectangle2D stringBounds = labelFont.getStringBounds(MINIMUM_VISIBLE_LABEL, g2.getFontRenderContext());
+        int minX = (int) stringBounds.getWidth() + 2*margin;
+        int minY = (int) stringBounds.getHeight() + 2*margin;
+        if (orientation.isHorizontal()) {
+            return minY;
+        }
+        else {
+            return minX;
+        }
+    }
+
 
 }

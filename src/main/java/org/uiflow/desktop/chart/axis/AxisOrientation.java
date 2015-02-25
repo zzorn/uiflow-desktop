@@ -37,14 +37,14 @@ public enum AxisOrientation {
         return calculateCoordinate(relativeAxisValue, relativeCrossAxisValue,
                                    horizontal,
                                    area.getMinX(),
-                                   area.getMaxX());
+                                   area.getMaxX() - 1);
     }
 
     public int getY(double relativeAxisValue, double relativeCrossAxisValue, Rectangle area) {
         return calculateCoordinate(relativeAxisValue, relativeCrossAxisValue,
                                    !horizontal,
                                    area.getMinY(),
-                                   area.getMaxY());
+                                   area.getMaxY() - 1);
     }
 
     private int calculateCoordinate(double relativeAxisValue,
@@ -55,7 +55,7 @@ public enum AxisOrientation {
 
         final double relativePos;
         if (coordinateAlongAxis) {
-            relativePos = relativeAxisValue;
+            relativePos = horizontal ? relativeAxisValue : 1.0 - relativeAxisValue; // Y axis starts at bottom and increases up.
         }
         else {
             relativePos = before ? 1.0 - relativeCrossAxisValue : relativeCrossAxisValue;
@@ -64,37 +64,36 @@ public enum AxisOrientation {
         return (int) MathUtils.mix(relativePos, minCoordiante, maxCoordinate);
     }
 
-    public void splitArea(Rectangle availableArea, Rectangle preferredAreaOut, int minWidth, int minHeight) {
-        int x = 0;
-        int y = 0;
-        int w = minWidth;
-        int h = minHeight;
-
-        final int availableH = availableArea.height;
-        final int availableW = availableArea.width;
+    public void splitArea(Rectangle availableArea, Rectangle preferredAreaOut, int thickness) {
+        int x = availableArea.x;
+        int y = availableArea.y;
+        int w = availableArea.width;
+        int h = availableArea.height;
 
         if (horizontal) {
-            w = availableW;
-            availableArea.height -= minHeight;
-
             if (before) {
-                availableArea.y = h;
+                availableArea.y += thickness;
             } else {
-                y = availableH - h;
+                y += h - thickness;
             }
+
+            h = thickness;
+            availableArea.height -= thickness;
         }
         else {
-            h = availableH;
-            availableArea.width -= minWidth;
-
             if (before) {
-                availableArea.x = w;
+                availableArea.x += thickness;
             }
             else {
-                x = availableW - w;
+                x += w - thickness;
             }
+
+            w = thickness;
+            availableArea.width -= thickness;
         }
 
-        preferredAreaOut.setBounds(x, y, w, h);
+        if (preferredAreaOut != null) {
+            preferredAreaOut.setBounds(x, y, w, h);
+        }
     }
 }

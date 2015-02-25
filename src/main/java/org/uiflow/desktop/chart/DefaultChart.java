@@ -59,13 +59,17 @@ public class DefaultChart extends RenderableUiComponent implements Chart {
         g2.setColor(backgroundColor);
         g2.fillRect(renderArea.x, renderArea.y, renderArea.width, renderArea.height);
 
-        // TODO: Add min thickness in pixels field to axis.  Shrink chart area by the thickness of each axis on all sides of it.
+        // Calculate chart area
+        Rectangle chartArea = new Rectangle(renderArea);
+        for (AxisView axisView : axisViews) {
+            axisView.calculateChartArea(chartArea, g2);
+        }
 
         // Draw axis
-        Rectangle chartArea = new Rectangle(renderArea);
+        Rectangle axisDrawArea = new Rectangle(renderArea);
         Rectangle axisArea = new Rectangle();
         for (AxisView axisView : axisViews) {
-            axisView.calculatePreferredArea(chartArea, axisArea, g2);
+            axisView.calculatePreferredArea(axisDrawArea, chartArea, axisArea, g2);
             axisView.render(g2, axisArea);
         }
 

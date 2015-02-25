@@ -47,12 +47,21 @@ public interface AxisView<T extends Number> extends Renderable, UiComponent {
 
     T getClosestRoundValue(T minimumValue, T preferredValue, T maximumValue);
 
+    int getPreferredThickness_pixels(Graphics2D g2);
+
     /**
      * @param availableArea the available area for the chart and axis.  Will be modified to exclude the area reserved for the axis.
+     * @param g2 needed to determine size of the labels.
+     */
+    void calculateChartArea(Rectangle availableArea, Graphics2D g2);
+
+    /**
+     * @param availableArea the available area for the chart and axis.  Will be modified to exclude the area reserved for the axis.
+     * @param chartArea the actual location of the chart.
      * @param preferredAreaOut the rectangle to write the preferred location and size of this axis view.
      * @param g2 needed to determine size of the labels.
      */
-    void calculatePreferredArea(Rectangle availableArea, Rectangle preferredAreaOut, Graphics2D g2);
+    void calculatePreferredArea(Rectangle availableArea, Rectangle chartArea, Rectangle preferredAreaOut, Graphics2D g2);
 
     Color getBackgroundColor();
 
