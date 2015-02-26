@@ -30,7 +30,7 @@ public class DefaultAxisView<T extends Number> extends RenderableUiComponent imp
     private Font labelFont;
     private int margin = DEFAULT_MARGIN;
 
-    private final Axis axis;
+    private final Axis<T> axis;
     private T firstVisible;
     private T lastVisible;
     private int numberOfTicks = DEFAULT_NUMBER_OF_TICKS;
@@ -39,28 +39,32 @@ public class DefaultAxisView<T extends Number> extends RenderableUiComponent imp
     private final ArrayList<AxisViewListener> listeners = new ArrayList<AxisViewListener>();
 
 
-    public DefaultAxisView(Axis axis) {
+    public DefaultAxisView(Axis<T> axis) {
         this(axis, null, null);
     }
 
-    public DefaultAxisView(Axis axis,
+    public DefaultAxisView(Axis<T> axis,
                            T firstVisible,
                            T lastVisible) {
         this(axis, firstVisible, lastVisible, AxisOrientation.HORIZONTAL_BOTTOM);
     }
 
-    public DefaultAxisView(Axis axis,
+    public DefaultAxisView(Axis<T> axis,
                            T firstVisible,
                            T lastVisible,
                            AxisOrientation orientation) {
         this(axis, firstVisible, lastVisible, orientation, (AxisProjection<T>) LinearAxisProjection.LINEAR_AXIS_PROJECTION);
     }
 
-    public DefaultAxisView(Axis axis,
+    public DefaultAxisView(Axis<T> axis,
                            T firstVisible,
                            T lastVisible,
                            AxisOrientation orientation,
                            AxisProjection<T> projection) {
+        notNull(axis, "axis");
+        notNull(orientation, "orientation");
+        notNull(projection, "projection");
+
         this.axis = axis;
         this.firstVisible = firstVisible;
         this.lastVisible = lastVisible;
@@ -70,7 +74,7 @@ public class DefaultAxisView<T extends Number> extends RenderableUiComponent imp
         setRenderable(this);
     }
 
-    public Axis getAxis() {
+    public Axis<T> getAxis() {
         return axis;
     }
 
@@ -110,6 +114,8 @@ public class DefaultAxisView<T extends Number> extends RenderableUiComponent imp
     }
 
     public final void setProjection(AxisProjection<T> projection) {
+        notNull(projection, "projection");
+
         this.projection = projection;
     }
 
@@ -308,11 +314,7 @@ public class DefaultAxisView<T extends Number> extends RenderableUiComponent imp
     }
 
     @Override public String createTickLabel(T value) {
-        if (value instanceof Float ||
-            value instanceof Double) return NUMBER_FORMAT.format(value);
-        else {
-            return value.toString();
-        }
+        return getAxis().getAxisLabel(value, getFirstVisible(), getLastVisible());
     }
 
     @Override public T getClosestRoundValue(T minimumValue, T preferredValue, T maximumValue) {

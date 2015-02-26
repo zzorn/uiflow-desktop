@@ -16,7 +16,7 @@ import java.awt.font.FontRenderContext;
 // TODO: Have some flag that indicates whether to track the maximum axis value (=show latest values)
 public interface AxisView<T extends Number> extends Renderable, UiComponent {
 
-    Axis getAxis();
+    Axis<T> getAxis();
 
     T getFirstVisible();
 

@@ -9,58 +9,58 @@ import static org.flowutils.Check.notNull;
 /**
  *
  */
-public abstract class ChartLayerBase implements ChartLayer {
+public abstract class ChartLayerBase<T extends Number, V extends Number> implements ChartLayer<T, V> {
 
-    private final Axis verticalAxis;
-    private final Axis horizontalAxis;
+    private final Axis<T> horizontalAxis;
+    private final Axis<V> verticalAxis;
 
-    private Number firstVertical;
-    private Number lastVertical;
-    private Number firstHorizontal;
-    private Number lastHorizontal;
+    private V firstVertical;
+    private V lastVertical;
+    private T firstHorizontal;
+    private T lastHorizontal;
 
-    protected ChartLayerBase(Axis verticalAxis, Axis horizontalAxis) {
-        notNull(verticalAxis, "verticalAxis");
+    protected ChartLayerBase(Axis<T> horizontalAxis, Axis<V> verticalAxis) {
         notNull(horizontalAxis, "horizontalAxis");
+        notNull(verticalAxis, "verticalAxis");
 
-        this.verticalAxis = verticalAxis;
         this.horizontalAxis = horizontalAxis;
+        this.verticalAxis = verticalAxis;
     }
 
-    public final Axis getVerticalAxis() {
-        return verticalAxis;
-    }
-
-    public final Axis getHorizontalAxis() {
+    public final Axis<T> getHorizontalAxis() {
         return horizontalAxis;
+    }
+
+    public final Axis<V> getVerticalAxis() {
+        return verticalAxis;
     }
 
     @Override public final void onVisibleAreaChanged(Axis axis, Number firstVisible, Number lastVisible) {
         if (axis == verticalAxis) {
-            firstVertical = firstVisible;
-            lastVertical = lastVisible;
+            firstVertical = (V) firstVisible;
+            lastVertical = (V) lastVisible;
             onVerticalVisibleAreaChanged();
         }
         else if (axis == horizontalAxis) {
-            firstHorizontal = firstVisible;
-            lastHorizontal = lastVisible;
+            firstHorizontal = (T) firstVisible;
+            lastHorizontal = (T) lastVisible;
             onHorizontalVisibleAreaChanged();
         }
     }
 
-    protected final Number getFirstVertical() {
+    protected final V getFirstVertical() {
         return firstVertical;
     }
 
-    protected final Number getLastVertical() {
+    protected final V getLastVertical() {
         return lastVertical;
     }
 
-    protected final Number getFirstHorizontal() {
+    protected final T getFirstHorizontal() {
         return firstHorizontal;
     }
 
-    protected final Number getLastHorizontal() {
+    protected final T getLastHorizontal() {
         return lastHorizontal;
     }
 
