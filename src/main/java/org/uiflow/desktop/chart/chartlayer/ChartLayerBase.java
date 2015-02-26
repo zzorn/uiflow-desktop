@@ -1,8 +1,13 @@
 package org.uiflow.desktop.chart.chartlayer;
 
 import org.uiflow.desktop.chart.axis.Axis;
+import org.uiflow.desktop.chart.dataseries.DataSeries;
 
 import java.awt.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import static org.flowutils.Check.notNull;
 
@@ -13,6 +18,8 @@ public abstract class ChartLayerBase<T extends Number, V extends Number> impleme
 
     private final Axis<T> horizontalAxis;
     private final Axis<V> verticalAxis;
+
+    private final Map<String, VisualizationChannel<T, ?>> channels = new LinkedHashMap<String, VisualizationChannel<T, ?>>();
 
     private V firstVertical;
     private V lastVertical;
@@ -25,6 +32,8 @@ public abstract class ChartLayerBase<T extends Number, V extends Number> impleme
 
         this.horizontalAxis = horizontalAxis;
         this.verticalAxis = verticalAxis;
+
+        registerChannels();
     }
 
     public final Axis<T> getHorizontalAxis() {
@@ -48,6 +57,113 @@ public abstract class ChartLayerBase<T extends Number, V extends Number> impleme
         }
     }
 
+    /**
+     * Should register the visualization channels provided by this ChartLayer using the addXXXChannel methods.
+     */
+    protected abstract void registerChannels();
+
+    /**
+     * Creates a new VisualizationChannel with the same type as the vertical axis and adds it to this ChartLayer.
+     * @param name name of the channel.
+     * @return the created visualization channel.
+     */
+    protected final <C> VisualizationChannel<T, V> addVerticalChannel(String name){
+        return addChannel(name, verticalAxis.getType());
+    }
+
+    /**
+     * Creates a new VisualizationChannel with the same type as the horizontal axis and adds it to this ChartLayer.
+     * @param name name of the channel.
+     * @return the created visualization channel.
+     */
+    protected final <C> VisualizationChannel<T, T> addHorizontalChannel(String name){
+        return addChannel(name, horizontalAxis.getType());
+    }
+
+    /**
+     * Creates a new VisualizationChannel with number type and adds it to this ChartLayer.
+     * @param name name of the channel.
+     * @return the created visualization channel.
+     */
+    protected final <C> VisualizationChannel<T, Number> addNumberChannel(String name){
+        return addChannel(name, Number.class);
+    }
+
+    /**
+     * Creates a new VisualizationChannel with double type and adds it to this ChartLayer.
+     * @param name name of the channel.
+     * @return the created visualization channel.
+     */
+    protected final <C> VisualizationChannel<T, Double> addDoubleChannel(String name){
+        return addChannel(name, Double.class);
+    }
+
+    /**
+     * Creates a new VisualizationChannel with float type and adds it to this ChartLayer.
+     * @param name name of the channel.
+     * @return the created visualization channel.
+     */
+    protected final <C> VisualizationChannel<T, Float> addFloatChannel(String name){
+        return addChannel(name, Float.class);
+    }
+
+    /**
+     * Creates a new VisualizationChannel with integer type and adds it to this ChartLayer.
+     * @param name name of the channel.
+     * @return the created visualization channel.
+     */
+    protected final <C> VisualizationChannel<T, Integer> addIntChannel(String name){
+        return addChannel(name, Integer.class);
+    }
+
+    /**
+     * Creates a new VisualizationChannel with color type and adds it to this ChartLayer.
+     * @param name name of the channel.
+     * @return the created visualization channel.
+     */
+    protected final <C> VisualizationChannel<T, Color> addColorChannel(String name){
+        return addChannel(name, Color.class);
+    }
+
+    /**
+     * Creates a new VisualizationChannel with boolean type and adds it to this ChartLayer.
+     * @param name name of the channel.
+     * @return the created visualization channel.
+     */
+    protected final <C> VisualizationChannel<T, Boolean> addBoolChannel(String name){
+        return addChannel(name, Boolean.class);
+    }
+
+    /**
+     * Creates a new VisualizationChannel and adds it to this ChartLayer.
+     * @param name name of the channel.
+     * @param type type of value in the channel.
+     * @return the created visualization channel.
+     */
+    protected final <C> VisualizationChannel<T, C> addChannel(String name, Class<C> type){
+        final VisualizationChannel<T, C> channel = new VisualizationChannel<T, C>(name, type, getHorizontalAxis());
+        channels.put(name, channel);
+        return channel;
+    }
+
+    @Override public final Collection<VisualizationChannel<T, ?>> getVisualizationChannels() {
+        return Collections.unmodifiableCollection(channels.values());
+    }
+
+    @Override public final VisualizationChannel<T, ?> getVisualizationChannel(String name) {
+        return channels.get(name);
+    }
+
+    @Override public final void setData(String visualizationChannel, DataSeries dataSeries) {
+        final VisualizationChannel<T, ?> channel = getVisualizationChannel(visualizationChannel);
+        if (channel != null) {
+            channel.setData(dataSeries);
+        }
+        else {
+            throw new IllegalArgumentException("Unknown visualization channel '" + visualizationChannel + "'");
+        }
+    }
+
     protected final V getFirstVertical() {
         return firstVertical;
     }
@@ -64,10 +180,10 @@ public abstract class ChartLayerBase<T extends Number, V extends Number> impleme
         return lastHorizontal;
     }
 
+
     protected void onVerticalVisibleAreaChanged() {
     }
 
     protected void onHorizontalVisibleAreaChanged() {
     }
-
 }

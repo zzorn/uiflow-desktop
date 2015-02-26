@@ -4,6 +4,7 @@ import org.flowutils.ClassUtils;
 import org.uiflow.desktop.chart.axis.Axis;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -30,9 +31,10 @@ public final class ArrayListDataSeries<T extends Number, V> extends IndexedDataS
      * @param seriesAxis axis that the positions of the values in this DataSeries are distributed along.
      * @param startPosition position for the first value on the seriesAxis.
      * @param stepSize the size of the step from one value to the next on the seriesAxis.  Defaults to one.
+     * @param initialValues initial values to add to the DataSeries.
      */
-    public ArrayListDataSeries(Axis<T> seriesAxis, T startPosition, T stepSize) {
-        this(seriesAxis, startPosition, stepSize, null);
+    public ArrayListDataSeries(Axis<T> seriesAxis, T startPosition, T stepSize, V ... initialValues) {
+        this(seriesAxis, startPosition, stepSize, Arrays.asList(initialValues));
     }
 
     /**
@@ -72,8 +74,9 @@ public final class ArrayListDataSeries<T extends Number, V> extends IndexedDataS
     public void addValues(Collection<V> values) {
         notNull(values, "values");
 
-        values.addAll(values);
+        this.values.addAll(values);
 
+        // Move end forward
         T currentPos = getEnd();
         for (int i = 0; i < values.size(); i++) {
             currentPos = ClassUtils.addNumbers(currentPos, getStepSize());
@@ -81,6 +84,18 @@ public final class ArrayListDataSeries<T extends Number, V> extends IndexedDataS
         setEnd(currentPos);
 
         notifySeriesModified();
+    }
+
+    /**
+     * Add a (small) number of values to the end of the data series.
+     * @param values values to add.
+     */
+    public void addValues(V ... values) {
+        notNull(values, "values");
+
+        for (V value : values) {
+            addValue(value);
+        }
     }
 
     /**

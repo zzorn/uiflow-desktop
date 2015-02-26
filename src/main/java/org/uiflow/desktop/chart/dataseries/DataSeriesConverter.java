@@ -34,7 +34,7 @@ public class DataSeriesConverter<T extends Number, S, O> extends DataSeriesBase<
      * @param seriesAxis axis that this DataSeries uses for the position of data values.
      * @param valueConverter the value converter to use for converting source values to the correct output type.
      */
-    protected DataSeriesConverter(Axis<T> seriesAxis,
+    public DataSeriesConverter(Axis<T> seriesAxis,
                                   ValueConverter<S, O> valueConverter) {
         super(seriesAxis);
         setValueConverter(valueConverter);
@@ -52,7 +52,7 @@ public class DataSeriesConverter<T extends Number, S, O> extends DataSeriesBase<
      * @param sourceSeries the data series to get the source data from.
      * @param valueConverter the value converter to use for converting source values to the correct output type.
      */
-    protected DataSeriesConverter(DataSeries<T, S> sourceSeries,
+    public DataSeriesConverter(DataSeries<T, S> sourceSeries,
                                   ValueConverter<S, O> valueConverter) {
         super(sourceSeries.getSeriesAxis());
         setSourceSeries(sourceSeries);

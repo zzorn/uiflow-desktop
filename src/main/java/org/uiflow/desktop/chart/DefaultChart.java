@@ -40,7 +40,7 @@ public class DefaultChart extends RenderableUiComponent implements Chart {
         setRenderable(this);
     }
 
-    @Override public void addAxisView(AxisView axisView) {
+    @Override public <T extends AxisView> T addAxisView(T axisView) {
         notNull(axisView, "axisView");
         final AxisView previousAxisView = axisViews.put(axisView.getAxis(), axisView);
         if (previousAxisView != null) {
@@ -48,6 +48,8 @@ public class DefaultChart extends RenderableUiComponent implements Chart {
         }
 
         axisView.addListener(axisViewListener);
+
+        return axisView;
     }
 
     @Override public void removeAxisView(AxisView axisView) {
@@ -57,7 +59,7 @@ public class DefaultChart extends RenderableUiComponent implements Chart {
         }
     }
 
-    @Override public void addLayer(ChartLayer chartLayer) {
+    @Override public <T extends ChartLayer> T addLayer(T chartLayer) {
         notNull(chartLayer, "chartLayer");
         Check.notContained(chartLayer, chartLayers, "chartLayers");
 
@@ -66,6 +68,8 @@ public class DefaultChart extends RenderableUiComponent implements Chart {
         // Update visible area
         updateChartAxis(chartLayer, chartLayer.getVerticalAxis());
         updateChartAxis(chartLayer, chartLayer.getHorizontalAxis());
+
+        return chartLayer;
     }
 
     private void updateChartAxis(ChartLayer chartLayer, final Axis axis) {

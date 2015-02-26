@@ -10,10 +10,10 @@ import org.uiflow.desktop.ui.UiComponent;
  */
 public interface Chart extends Renderable, UiComponent {
 
-    void addAxisView(AxisView axisView);
+    <T extends AxisView> T addAxisView(T axisView);
     void removeAxisView(AxisView axisView);
 
-    void addLayer(ChartLayer chartLayer);
+    <T extends ChartLayer> T addLayer(T chartLayer);
     void removeLayer(ChartLayer chartLayer);
 
 }
