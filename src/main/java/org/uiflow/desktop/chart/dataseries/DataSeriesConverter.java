@@ -1,7 +1,7 @@
 package org.uiflow.desktop.chart.dataseries;
 
 import org.uiflow.desktop.chart.axis.Axis;
-import org.uiflow.desktop.utils.ValueConverter;
+import org.uiflow.desktop.utils.Mapper;
 
 import java.util.List;
 
@@ -11,7 +11,7 @@ import java.util.List;
 public class DataSeriesConverter<T extends Number, S, O> extends DataSeriesBase<T, O> {
 
     private DataSeries<T, S> sourceSeries;
-    private ValueConverter<S, O> valueConverter;
+    private Mapper<S, O> mapper;
 
     private final DataSeriesListener<T, S> seriesListener = new DataSeriesListener<T, S>() {
         @Override public void onValueAddedToEnd(DataSeries<T, S> dataSeries, T position, S value) {
@@ -32,12 +32,12 @@ public class DataSeriesConverter<T extends Number, S, O> extends DataSeriesBase<
 
     /**
      * @param seriesAxis axis that this DataSeries uses for the position of data values.
-     * @param valueConverter the value converter to use for converting source values to the correct output type.
+     * @param mapper the value converter to use for converting source values to the correct output type.
      */
     public DataSeriesConverter(Axis<T> seriesAxis,
-                                  ValueConverter<S, O> valueConverter) {
+                                  Mapper<S, O> mapper) {
         super(seriesAxis);
-        setValueConverter(valueConverter);
+        setMapper(mapper);
     }
 
     /**
@@ -50,13 +50,17 @@ public class DataSeriesConverter<T extends Number, S, O> extends DataSeriesBase<
 
     /**
      * @param sourceSeries the data series to get the source data from.
-     * @param valueConverter the value converter to use for converting source values to the correct output type.
+     * @param mapper the value converter to use for converting source values to the correct output type.
      */
     public DataSeriesConverter(DataSeries<T, S> sourceSeries,
-                                  ValueConverter<S, O> valueConverter) {
+                               Mapper<S, O> mapper) {
         super(sourceSeries.getSeriesAxis());
         setSourceSeries(sourceSeries);
-        setValueConverter(valueConverter);
+        setMapper(mapper);
+    }
+
+    public static <T extends Number, S, O> DataSeries<T, O> create(DataSeries<T, S> sourceSeries, Mapper<S, O> mapper) {
+        return new DataSeriesConverter<T, S, O>(sourceSeries, mapper);
     }
 
     /**
@@ -91,15 +95,15 @@ public class DataSeriesConverter<T extends Number, S, O> extends DataSeriesBase<
     /**
      * @return the value converter to use for converting source values to the correct output type.
      */
-    public final ValueConverter<S, O> getValueConverter() {
-        return valueConverter;
+    public final Mapper<S, O> getMapper() {
+        return mapper;
     }
 
     /**
-     * @param valueConverter the value converter to use for converting source values to the correct output type.
+     * @param mapper the value converter to use for converting source values to the correct output type.
      */
-    public final void setValueConverter(ValueConverter<S, O> valueConverter) {
-        this.valueConverter = valueConverter;
+    public final void setMapper(Mapper<S, O> mapper) {
+        this.mapper = mapper;
     }
 
     @Override public O getValue(T position) {
@@ -146,8 +150,8 @@ public class DataSeriesConverter<T extends Number, S, O> extends DataSeriesBase<
      * Uses the valueConverter by default if it is specified.
      */
     protected O convertValue(S sourceValue) {
-        if (valueConverter != null) {
-            return valueConverter.convert(sourceValue);
+        if (mapper != null) {
+            return mapper.convert(sourceValue);
         } else {
             return null;
         }

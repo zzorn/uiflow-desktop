@@ -21,6 +21,11 @@ import static org.flowutils.Check.notNull;
 public class DefaultChart extends RenderableUiComponent implements Chart {
 
     private Color backgroundColor = new Color(0,0,0);
+    private Color titleColor = new Color(255, 255, 255);
+    private String title;
+    private boolean overlayTitle = true;
+    private boolean centerTitle = true;
+    private int titleMargin = 2;
 
     private final Map<Axis, AxisView> axisViews = new LinkedHashMap<Axis, AxisView>();
     private final List<ChartLayer> chartLayers = new ArrayList<ChartLayer>();
@@ -37,7 +42,58 @@ public class DefaultChart extends RenderableUiComponent implements Chart {
     };
 
     public DefaultChart() {
+        this(null);
+    }
+
+    public DefaultChart(String title) {
         setRenderable(this);
+        setTitle(title);
+    }
+
+    public final String getTitle() {
+        return title;
+    }
+
+    public final void setTitle(String title) {
+        this.title = title;
+    }
+
+    public final boolean isOverlayTitle() {
+        return overlayTitle;
+    }
+
+    public final void setOverlayTitle(boolean overlayTitle) {
+        this.overlayTitle = overlayTitle;
+    }
+
+    @Override public final boolean isCenterTitle() {
+        return centerTitle;
+    }
+
+    @Override public final void setCenterTitle(boolean centerTitle) {
+        this.centerTitle = centerTitle;
+    }
+
+    @Override public final Color getTitleColor() {
+        return titleColor;
+    }
+
+    @Override public final void setTitleColor(Color titleColor) {
+        this.titleColor = titleColor;
+    }
+
+    /**
+     * @return margin around title in pixels.
+     */
+    public final int getTitleMargin() {
+        return titleMargin;
+    }
+
+    /**
+     * @param titleMargin margin around title in pixels.
+     */
+    public final void setTitleMargin(int titleMargin) {
+        this.titleMargin = titleMargin;
     }
 
     @Override public <T extends AxisView> T addAxisView(T axisView) {
@@ -98,6 +154,18 @@ public class DefaultChart extends RenderableUiComponent implements Chart {
         g2.setColor(backgroundColor);
         g2.fillRect(renderArea.x, renderArea.y, renderArea.width, renderArea.height);
 
+        // If title is not overlaid, reserve space for it at the top.
+        final String title = getTitle();
+        int titleHeight = g2.getFontMetrics().getMaxAscent() +
+                          g2.getFontMetrics().getMaxDescent() +
+                          + 2 * titleMargin;
+        int titleY = renderArea.y + titleMargin + g2.getFontMetrics().getMaxAscent();
+        if (!overlayTitle) {
+            renderArea = new Rectangle(renderArea);
+            renderArea.y += titleHeight;
+            renderArea.height -= titleHeight;
+        }
+
         // Calculate chart area
         Rectangle chartArea = new Rectangle(renderArea);
         for (AxisView axisView : axisViews.values()) {
@@ -115,6 +183,24 @@ public class DefaultChart extends RenderableUiComponent implements Chart {
         // Draw chart layers
         for (ChartLayer chartLayer : chartLayers) {
             chartLayer.render(g2, chartArea);
+        }
+
+        // Draw title
+        if (title != null && !title.isEmpty()) {
+            int titleX;
+            if (centerTitle) {
+                titleX = chartArea.x + (chartArea.width - g2.getFontMetrics().stringWidth(title)) / 2;
+            }
+            else {
+                titleX = chartArea.x + titleMargin;
+            }
+            if (overlayTitle) {
+                titleY = chartArea.y + titleMargin + g2.getFontMetrics().getMaxAscent();
+            }
+
+            // TODO: Draw dropshadow.  Implement the draw command in a GraphicsContext utility class.
+            g2.setColor(titleColor);
+            g2.drawString(title, titleX, titleY);
         }
     }
 }

@@ -3,7 +3,7 @@ package org.uiflow.desktop.utils;
 /**
  * Maps a source value of some type S to an output value of a type O.
  */
-public interface ValueConverter<S, O> {
+public interface Mapper<S, O> {
 
     /**
      * @param sourceValue source value to convert to an output value.  May be null.

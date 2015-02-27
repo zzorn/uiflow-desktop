@@ -11,7 +11,7 @@ import static org.flowutils.Check.notNull;
  * Converts source values to a color using some ColorFunction (e.g. a ColorGradient).
  * Optionally maps the source value to a more suitable range for the color function first, using scaling and offsets.
  */
-public final class ColorValueConverter<S extends Number> implements ValueConverter<S, Color> {
+public final class ColorMapper<S extends Number> implements Mapper<S, Color> {
 
     private static final Color DEFAULT_COLOR = Color.DARK_GRAY;
 
@@ -30,14 +30,14 @@ public final class ColorValueConverter<S extends Number> implements ValueConvert
     /**
      * Creates a new ColorValueConverter without any ColorFunction.  All outputs will be the default color (dark gray).
      */
-    public ColorValueConverter() {
+    public ColorMapper() {
         this(null);
     }
 
     /**
      * @param colorFunction color function to convert the value to a color with.  For example a color gradient.
      */
-    public ColorValueConverter(ColorFunction colorFunction) {
+    public ColorMapper(ColorFunction colorFunction) {
         this(colorFunction, DEFAULT_COLOR);
     }
 
@@ -45,7 +45,7 @@ public final class ColorValueConverter<S extends Number> implements ValueConvert
      * @param colorFunction color function to convert the value to a color with.  For example a color gradient.
      * @param defaultColor the color to use when no value is available, or the color function hasn't been specified.
      */
-    public ColorValueConverter(ColorFunction colorFunction, Color defaultColor) {
+    public ColorMapper(ColorFunction colorFunction, Color defaultColor) {
         this(colorFunction, DEFAULT_PRE_OFFSET, DEFAULT_SCALE, DEFAULT_POST_OFFSET, defaultColor);
     }
 
@@ -55,7 +55,7 @@ public final class ColorValueConverter<S extends Number> implements ValueConvert
      * @param scale scaling to multiply the source with after the preOffset has been added to it.  Defaults to one.
      * @param postOffset offset to add to the mapped value last.  Defaults to zero.
      */
-    public ColorValueConverter(ColorFunction colorFunction, double preOffset, double scale, double postOffset) {
+    public ColorMapper(ColorFunction colorFunction, double preOffset, double scale, double postOffset) {
         this(colorFunction, preOffset, scale, postOffset, DEFAULT_COLOR);
     }
 
@@ -66,14 +66,54 @@ public final class ColorValueConverter<S extends Number> implements ValueConvert
      * @param postOffset offset to add to the mapped value last.  Defaults to zero.
      * @param defaultColor the color to use when no value is available, or the color function hasn't been specified.
      */
-    public ColorValueConverter(ColorFunction colorFunction,
-                               double preOffset,
-                               double scale,
-                               double postOffset,
-                               Color defaultColor) {
+    public ColorMapper(ColorFunction colorFunction,
+                       double preOffset,
+                       double scale,
+                       double postOffset,
+                       Color defaultColor) {
         setColorFunction(colorFunction);
         setSourceValueMapping(preOffset, scale, postOffset);
         setDefaultColor(defaultColor);
+    }
+
+    /**
+     * Utility method for creating a ColorValueConverter.
+     * @param colorFunction color function to convert the value to a color with.  For example a color gradient.
+     */
+    public static <S extends Number> ColorMapper<S> create(ColorFunction colorFunction) {
+        return new ColorMapper<S>(colorFunction);
+    }
+
+    /**
+     * Utility method for creating a ColorValueConverter.
+     * @param colorFunction color function to convert the value to a color with.  For example a color gradient.
+     * @param defaultColor the color to use when no value is available, or the color function hasn't been specified.
+     */
+    public static <S extends Number> ColorMapper<S> create(ColorFunction colorFunction, Color defaultColor) {
+        return new ColorMapper<S>(colorFunction, defaultColor);
+    }
+
+    /**
+     * Utility method for creating a ColorValueConverter.
+     * @param colorFunction color function to convert the value to a color with.  For example a color gradient.
+     * @param preOffset number to be added to the source before scaling it.  Defaults to zero.
+     * @param scale scaling to multiply the source with after the preOffset has been added to it.  Defaults to one.
+     * @param postOffset offset to add to the mapped value last.  Defaults to zero.
+     */
+    public static <S extends Number> ColorMapper<S> create(ColorFunction colorFunction, double preOffset, double scale, double postOffset) {
+        return new ColorMapper<S>(colorFunction, preOffset, scale, postOffset);
+    }
+
+    /**
+     * Utility method for creating a ColorValueConverter.
+     * @param colorFunction color function to convert the value to a color with.  For example a color gradient.
+     * @param preOffset number to be added to the source before scaling it.  Defaults to zero.
+     * @param scale scaling to multiply the source with after the preOffset has been added to it.  Defaults to one.
+     * @param postOffset offset to add to the mapped value last.  Defaults to zero.
+     * @param defaultColor the color to use when no value is available, or the color function hasn't been specified.
+     */
+    public static <S extends Number> ColorMapper<S> create(ColorFunction colorFunction, double preOffset, double scale, double postOffset, Color defaultColor) {
+        return new ColorMapper<S>(colorFunction, preOffset, scale, postOffset, defaultColor);
     }
 
     /**
