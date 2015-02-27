@@ -19,8 +19,22 @@ public final class ChainedMapper<S, M, O> implements Mapper<S, O> {
         this.lastConverter = lastConverter;
     }
 
-    public static <S, M, O> ChainedMapper<S, M, O> chain(Mapper<S, M> firstConverter, Mapper<M, O> lastConverter) {
+    public static <S, M, O> ChainedMapper<S, M, O> chain(Mapper<S, M> firstConverter,
+                                                         Mapper<M, O> lastConverter) {
         return new ChainedMapper<S, M, O>(firstConverter, lastConverter);
+    }
+
+    public static <S, M1, M2, O> ChainedMapper<S, M2, O> chain(Mapper<S, M1> firstConverter,
+                                                               Mapper<M1, M2> midConverter,
+                                                               Mapper<M2, O> lastConverter) {
+        return new ChainedMapper<S, M2, O>(chain(firstConverter, midConverter), lastConverter);
+    }
+
+    public static <S, M1, M2, M3, O> ChainedMapper<S, M3, O> chain(Mapper<S, M1> firstConverter,
+                                                                   Mapper<M1, M2> mid1Converter,
+                                                                   Mapper<M2, M3> mid2Converter,
+                                                                   Mapper<M3, O> lastConverter) {
+        return new ChainedMapper<S, M3, O>(chain(firstConverter, mid1Converter, mid2Converter), lastConverter);
     }
 
     public Mapper<S, M> getFirstConverter() {

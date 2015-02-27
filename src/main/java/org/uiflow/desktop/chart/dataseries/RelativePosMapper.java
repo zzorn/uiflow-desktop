@@ -56,7 +56,7 @@ public final class RelativePosMapper<V extends Number> implements Mapper<V, Doub
                 else return (double)(sourceValue.longValue() - firstVisibleAsLong) / (lastVisibleAsLong - firstVisibleAsLong);
             }
             else {
-                if (lastVisibleAsDouble == lastVisibleAsDouble) return 0.5;
+                if (lastVisibleAsDouble == firstVisibleAsDouble) return 0.5;
                 else return (sourceValue.doubleValue() - firstVisibleAsDouble) / (lastVisibleAsDouble - firstVisibleAsDouble);
             }
         }

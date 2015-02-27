@@ -1,9 +1,7 @@
 package org.uiflow.desktop.chart;
 
 import org.flowutils.Check;
-import org.uiflow.desktop.chart.axis.Axis;
-import org.uiflow.desktop.chart.axis.AxisView;
-import org.uiflow.desktop.chart.axis.AxisViewListener;
+import org.uiflow.desktop.chart.axis.*;
 import org.uiflow.desktop.chart.chartlayer.ChartLayer;
 import org.uiflow.desktop.ui.RenderableUiComponent;
 
@@ -94,6 +92,74 @@ public class DefaultChart extends RenderableUiComponent implements Chart {
      */
     public final void setTitleMargin(int titleMargin) {
         this.titleMargin = titleMargin;
+    }
+
+    @Override public <T extends Number> AxisView<T> addAxis(String axisName,
+                                                            Class<T> axisType,
+                                                            AxisOrientation orientation) {
+        return addAxis(axisName, axisType, orientation, null, null);
+    }
+
+    @Override public <T extends Number> AxisView<T> addAxis(String axisName,
+                                                            Class<T> axisType,
+                                                            AxisOrientation orientation,
+                                                            T firstVisible,
+                                                            T lastVisible) {
+        return addAxis(axisName, axisType, orientation, firstVisible, lastVisible, new LinearAxisProjection<T>());
+    }
+
+    @Override public <T extends Number> AxisView<T> addAxis(String axisName,
+                                                            Class<T> axisType,
+                                                            AxisOrientation orientation,
+                                                            T firstVisible,
+                                                            T lastVisible,
+                                                            AxisProjection<T> axisProjection) {
+        return addAxis(new Axis<T>(axisName, axisType), orientation, firstVisible, lastVisible, axisProjection);
+    }
+
+    @Override public <T extends Number> AxisView<T> addAxis(Axis<T> axis,
+                                                            AxisOrientation orientation) {
+        return addAxisView(new DefaultAxisView<T>(axis,
+                                                  null,
+                                                  null,
+                                                  orientation));
+    }
+
+    @Override public <T extends Number> AxisView<T> addAxis(Axis<T> axis,
+                                                            AxisOrientation orientation,
+                                                            T firstVisible,
+                                                            T lastVisible) {
+        return addAxisView(new DefaultAxisView<T>(axis,
+                                                  firstVisible,
+                                                  lastVisible,
+                                                  orientation));
+    }
+
+    @Override public <T extends Number> AxisView<T> addAxis(Axis<T> axis,
+                                                            AxisOrientation orientation,
+                                                            T firstVisible,
+                                                            T lastVisible,
+                                                            AxisProjection<T> axisProjection) {
+        return addAxisView(new DefaultAxisView<T>(axis,
+                                                  firstVisible,
+                                                  lastVisible,
+                                                  orientation,
+                                                  axisProjection));
+    }
+
+    @Override public AxisView<Long> addTimeAxis() {
+        return addTimeAxis(null, null);
+    }
+
+    @Override public AxisView<Long> addTimeAxis(Long firstVisible,
+                                                Long lastVisible) {
+        return addTimeAxis("Time", firstVisible, lastVisible);
+    }
+
+    @Override public AxisView<Long> addTimeAxis(String axisName,
+                                                Long firstVisible,
+                                                Long lastVisible) {
+        return addAxisView(new DefaultAxisView<Long>(new TimeAxis(axisName), firstVisible, lastVisible));
     }
 
     @Override public <T extends AxisView> T addAxisView(T axisView) {

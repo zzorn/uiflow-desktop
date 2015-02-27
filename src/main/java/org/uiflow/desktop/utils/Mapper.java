@@ -3,6 +3,7 @@ package org.uiflow.desktop.utils;
 /**
  * Maps a source value of some type S to an output value of a type O.
  */
+// TODO: Move to flowutils library.
 public interface Mapper<S, O> {
 
     /**
