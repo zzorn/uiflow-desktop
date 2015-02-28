@@ -10,6 +10,7 @@ public class ColorGradients {
 
     public static final ColorGradient SPECTRUM = createSpectrumGradient();
     public static final ColorGradient RAINBOW = createRainbowGradient();
+    public static final ColorGradient BLUERED = createBlueRedGradient();
     public static final ColorGradient GREYSCALE = createGreyscaleGradient();
 
     public static ColorGradient createSpectrumGradient() {
@@ -46,8 +47,18 @@ public class ColorGradients {
 
     public static ColorGradient createGreyscaleGradient() {
         final ColorGradient gradient = new ColorGradient();
-        gradient.addColor(0.0, 0, 0, 0);
-        gradient.addColor(1.0, 1, 1, 1);
+        gradient.addColor(0.0, new Color(0,0,0));
+        gradient.addColor(1.0, new Color(255, 255, 255));
+        return gradient;
+    }
+
+    public static ColorGradient createBlueRedGradient() {
+        final ColorGradient gradient = new ColorGradient();
+        gradient.addColor(0.0,  new Color(0, 0, 255));
+        gradient.addColor(0.25, new Color(80, 160, 255));
+        gradient.addColor(0.5,  new Color(220, 220, 220));
+        gradient.addColor(0.75, new Color(255, 160, 80));
+        gradient.addColor(1.0,  new Color(255, 0, 0));
         return gradient;
     }
 

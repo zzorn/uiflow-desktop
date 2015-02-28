@@ -8,6 +8,7 @@ import java.awt.*;
 /**
  *
  */
+// TODO: Rename dropShadow to outline, and allow it to be colored as well?
 public class LineLayer<T extends Number, V extends Number> extends SegmentedChartLayerBase<T, V> {
 
     public VisualizationChannel<T, Color> lineColor;
@@ -16,6 +17,14 @@ public class LineLayer<T extends Number, V extends Number> extends SegmentedChar
 
     private float defaultLineThickness = 1;
     private Color defaultColor = Color.DARK_GRAY;
+
+    private boolean dropShadow = true;
+    private Color dropShadowColor = Color.BLACK;
+
+    private boolean renderDropShadowNow = false;
+    private float dropShadowSizeFactor = 2f;
+    private float dropShadowOffsetFactor = 0.1f;
+
 
     public LineLayer(Axis<T> horizontalAxis,
                         Axis<V> verticalAxis) {
@@ -44,6 +53,38 @@ public class LineLayer<T extends Number, V extends Number> extends SegmentedChar
         this.defaultColor = defaultColor;
     }
 
+    public boolean isDropShadow() {
+        return dropShadow;
+    }
+
+    public void setDropShadow(boolean dropShadow) {
+        this.dropShadow = dropShadow;
+    }
+
+    public Color getDropShadowColor() {
+        return dropShadowColor;
+    }
+
+    public void setDropShadowColor(Color dropShadowColor) {
+        this.dropShadowColor = dropShadowColor;
+    }
+
+    public float getDropShadowSizeFactor() {
+        return dropShadowSizeFactor;
+    }
+
+    public void setDropShadowSizeFactor(float dropShadowSizeFactor) {
+        this.dropShadowSizeFactor = dropShadowSizeFactor;
+    }
+
+    public float getDropShadowOffsetFactor() {
+        return dropShadowOffsetFactor;
+    }
+
+    public void setDropShadowOffsetFactor(float dropShadowOffsetFactor) {
+        this.dropShadowOffsetFactor = dropShadowOffsetFactor;
+    }
+
     @Override protected void registerChannels() {
         lineHeight = addVerticalChannel("Line Height");
         lineColor = addColorChannel("Line Color");
@@ -52,6 +93,17 @@ public class LineLayer<T extends Number, V extends Number> extends SegmentedChar
         // TODO: Add marker channel, with marker type?
 
 
+    }
+
+    @Override public void render(Graphics2D g2, Rectangle renderArea) {
+
+        if (dropShadow) {
+            renderDropShadowNow = true;
+            super.render(g2, renderArea);
+        }
+
+        renderDropShadowNow = false;
+        super.render(g2, renderArea);
     }
 
     @Override protected void renderSegment(Graphics2D g2,
@@ -84,27 +136,42 @@ public class LineLayer<T extends Number, V extends Number> extends SegmentedChar
 
                 final Color color = lineColor.getVisibleValue(segmentIndex, defaultColor);
                 float thickness = defaultLineThickness;
+                if (renderDropShadowNow) thickness *= dropShadowSizeFactor;
 
                 int x1 = (int) segmentArea.getMinX();
                 int x2 = (int) segmentArea.getCenterX();
                 int x3 = (int) segmentArea.getMaxX();
 
-                g2.setColor(color);
                 g2.setStroke(new BasicStroke(thickness, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 
-                if (hasPrevPos) drawLine(g2, segmentArea, prevPos, currentPos, x1, x2);
-                if (hasNextPos) drawLine(g2, segmentArea, currentPos, nextPos, x2, x3);
+                if (hasPrevPos) drawLine(g2, color, thickness, segmentArea, prevPos, currentPos, x1, x2);
+                if (hasNextPos) drawLine(g2, color, thickness, segmentArea, currentPos, nextPos, x2, x3);
             }
 
             // TODO: Draw marker
         }
     }
 
-    private void drawLine(Graphics2D g2, Rectangle segmentArea, double prevPos, double currentPos, int x1, int x2) {
+    private void drawLine(Graphics2D g2,
+                          Color color,
+                          float thickness,
+                          Rectangle segmentArea,
+                          double prevPos,
+                          double currentPos,
+                          int x1,
+                          int x2) {
         int y1 = (int) MathUtils.mix(prevPos, segmentArea.getMaxY(), segmentArea.getMinY());
         int y2 = (int) MathUtils.mix(currentPos, segmentArea.getMaxY(), segmentArea.getMinY());
 
-        g2.drawLine(x1, y1, x2, y2);
+        if (renderDropShadowNow) {
+            int offs = (int) (thickness * dropShadowOffsetFactor);
+            g2.setColor(dropShadowColor);
+            g2.drawLine(x1+ offs, y1+ offs, x2+ offs, y2+ offs);
+        }
+        else {
+            g2.setColor(color);
+            g2.drawLine(x1, y1, x2, y2);
+        }
     }
 
 

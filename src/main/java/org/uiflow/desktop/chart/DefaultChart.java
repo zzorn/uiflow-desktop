@@ -216,6 +216,10 @@ public class DefaultChart extends RenderableUiComponent implements Chart {
     }
 
     @Override public void render(Graphics2D g2, Rectangle renderArea) {
+        // Smooth edges using anti-aliasing
+        final Object oldAntialias = g2.getRenderingHint(RenderingHints.KEY_ANTIALIASING);
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
         // Draw background
         g2.setColor(backgroundColor);
         g2.fillRect(renderArea.x, renderArea.y, renderArea.width, renderArea.height);
@@ -268,5 +272,7 @@ public class DefaultChart extends RenderableUiComponent implements Chart {
             g2.setColor(titleColor);
             g2.drawString(title, titleX, titleY);
         }
+
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, oldAntialias);
     }
 }
