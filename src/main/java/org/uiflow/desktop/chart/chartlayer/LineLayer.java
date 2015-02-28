@@ -1,6 +1,7 @@
 package org.uiflow.desktop.chart.chartlayer;
 
 import org.flowutils.MathUtils;
+import org.flowutils.Ranged;
 import org.uiflow.desktop.chart.axis.Axis;
 
 import java.awt.*;
@@ -11,9 +12,10 @@ import java.awt.*;
 // TODO: Rename dropShadow to outline, and allow it to be colored as well?
 public class LineLayer<T extends Number, V extends Number> extends SegmentedChartLayerBase<T, V> {
 
-    public VisualizationChannel<T, Color> lineColor;
-
-    public VisualizationChannel<T, V> lineHeight;
+    private static final int MAX_THICKNESS = 200;
+    public final VisualizationChannel<T, Color> lineColor;
+    public final VisualizationChannel<T, V> lineHeight;
+    public final VisualizationChannel<T, Float> thickness;
 
     private float defaultLineThickness = 1;
     private Color defaultColor = Color.DARK_GRAY;
@@ -28,13 +30,18 @@ public class LineLayer<T extends Number, V extends Number> extends SegmentedChar
 
     public LineLayer(Axis<T> horizontalAxis,
                         Axis<V> verticalAxis) {
-        super(horizontalAxis, verticalAxis);
-        setSegmentXGap(0);
+        this(horizontalAxis, verticalAxis, DEFAULT_SEGMENT_COUNT);
     }
 
     public LineLayer(Axis<T> horizontalAxis, Axis<V> verticalAxis, int defaultNumberOfSegments) {
         super(horizontalAxis, verticalAxis, defaultNumberOfSegments);
         setSegmentXGap(0);
+
+        lineHeight = addVerticalChannel("Height");
+        lineColor = addColorChannel("Color");
+        thickness = addFloatChannel("Thickness");
+
+        // TODO: Add marker channel, with marker type?
     }
 
     public float getDefaultLineThickness() {
@@ -85,16 +92,6 @@ public class LineLayer<T extends Number, V extends Number> extends SegmentedChar
         this.dropShadowOffsetFactor = dropShadowOffsetFactor;
     }
 
-    @Override protected void registerChannels() {
-        lineHeight = addVerticalChannel("Line Height");
-        lineColor = addColorChannel("Line Color");
-
-        // TODO: Add thickness channel, of Range/Interval type
-        // TODO: Add marker channel, with marker type?
-
-
-    }
-
     @Override public void render(Graphics2D g2, Rectangle renderArea) {
 
         if (dropShadow) {
@@ -135,7 +132,9 @@ public class LineLayer<T extends Number, V extends Number> extends SegmentedChar
                 nextPos = MathUtils.mix(0.5, nextPos, currentPos);
 
                 final Color color = lineColor.getVisibleValue(segmentIndex, defaultColor);
-                float thickness = defaultLineThickness;
+                float thickness = MathUtils.clamp(this.thickness.getVisibleValue(segmentIndex, defaultLineThickness),
+                                                  0,
+                                                  MAX_THICKNESS);
                 if (renderDropShadowNow) thickness *= dropShadowSizeFactor;
 
                 int x1 = (int) segmentArea.getMinX();

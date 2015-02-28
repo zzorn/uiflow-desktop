@@ -14,7 +14,7 @@ import java.util.Iterator;
  */
 public abstract class SegmentedChartLayerBase<T extends Number, V extends Number> extends ChartLayerBase<T, V> {
 
-    private static final int DEFAULT_SEGMENT_COUNT = 20;
+    protected static final int DEFAULT_SEGMENT_COUNT = 20;
 
     private int defaultNumberOfSegments;
     private int segmentXGap = 2;

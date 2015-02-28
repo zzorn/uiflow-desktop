@@ -1,10 +1,12 @@
 package org.uiflow.desktop.chart;
 
+import org.flowutils.Ranged;
 import org.uiflow.desktop.chart.axis.*;
 import org.uiflow.desktop.chart.chartlayer.BarLayer;
 import org.uiflow.desktop.chart.chartlayer.LineLayer;
 import org.uiflow.desktop.chart.dataseries.ArrayListDataSeries;
 import org.uiflow.desktop.chart.dataseries.DataSeries;
+import org.uiflow.desktop.chart.dataseries.DataSeriesBase;
 import org.uiflow.desktop.chart.dataseries.RelativePosMapper;
 import org.uiflow.desktop.gradient.ColorGradients;
 import org.uiflow.desktop.ui.SimpleFrame;
@@ -109,14 +111,24 @@ public class ChartExample {
         pirateCountLayer.barHeight.setData(numberOfPiratesOverTime);
         pirateCountLayer.barColor.setData(numberOfPiratesOverTime,
                                      new RelativePosMapper<Integer>(numberOfPiratesAxisView),
-                                     new ColorMapper<Double>(ColorGradients.RAINBOW));
+                                     new ColorMapper<Ranged>(ColorGradients.RAINBOW));
+        pirateCountLayer.barWidth.setData(new DataSeriesBase<Long, Ranged>(timeAxis) {
+            @Override public Ranged getValue(Long position) {
+                return new Ranged(Math.sin((double) position / 333*oneYear), -3, 1);
+            }
+        });
 
         final LineLayer<Long, Double> globalWarmingLayer = chart.addLayer(new LineLayer<Long, Double>(timeAxis, globalWarmingAxis));
         globalWarmingLayer.lineHeight.setData(globalWarmingOverTime);
         globalWarmingLayer.lineColor.setData(globalWarmingOverTime,
                                              new RelativePosMapper<Double>(globalWarmingAxisView),
-                                             new ColorMapper<Double>(ColorGradients.BLUERED));
+                                             new ColorMapper<Ranged>(ColorGradients.BLUERED));
         globalWarmingLayer.setDefaultLineThickness(5);
+        globalWarmingLayer.thickness.setData(new DataSeriesBase<Long, Float>(timeAxis) {
+            @Override public Float getValue(Long position) {
+                return (float) Math.sin((double) position / 100*oneYear) * 3 + 5;
+            }
+        });
 
         new SimpleFrame("Chart Example", chart.getUi());
 

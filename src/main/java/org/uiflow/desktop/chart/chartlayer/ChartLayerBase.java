@@ -1,5 +1,6 @@
 package org.uiflow.desktop.chart.chartlayer;
 
+import org.flowutils.Ranged;
 import org.uiflow.desktop.chart.axis.Axis;
 import org.uiflow.desktop.chart.dataseries.DataSeries;
 
@@ -32,8 +33,6 @@ public abstract class ChartLayerBase<T extends Number, V extends Number> impleme
 
         this.horizontalAxis = horizontalAxis;
         this.verticalAxis = verticalAxis;
-
-        registerChannels();
     }
 
     public final Axis<T> getHorizontalAxis() {
@@ -56,11 +55,6 @@ public abstract class ChartLayerBase<T extends Number, V extends Number> impleme
             onHorizontalVisibleAreaChanged();
         }
     }
-
-    /**
-     * Should register the visualization channels provided by this ChartLayer using the addXXXChannel methods.
-     */
-    protected abstract void registerChannels();
 
     /**
      * Creates a new VisualizationChannel with the same type as the vertical axis and adds it to this ChartLayer.
@@ -114,6 +108,15 @@ public abstract class ChartLayerBase<T extends Number, V extends Number> impleme
      */
     protected final <C> VisualizationChannel<T, Integer> addIntChannel(String name){
         return addChannel(name, Integer.class);
+    }
+
+    /**
+     * Creates a new VisualizationChannel with Ranged type and adds it to this ChartLayer.
+     * @param name name of the channel.
+     * @return the created visualization channel.
+     */
+    protected final <C> VisualizationChannel<T, Ranged> addRangedChannel(String name){
+        return addChannel(name, Ranged.class);
     }
 
     /**

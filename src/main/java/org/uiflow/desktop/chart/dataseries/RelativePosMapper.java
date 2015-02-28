@@ -1,5 +1,6 @@
 package org.uiflow.desktop.chart.dataseries;
 
+import org.flowutils.Ranged;
 import org.uiflow.desktop.chart.axis.Axis;
 import org.uiflow.desktop.chart.axis.AxisView;
 import org.uiflow.desktop.chart.axis.AxisViewListener;
@@ -11,7 +12,7 @@ import static org.flowutils.Check.notNull;
  * Converts values to the range 0..1, where 0 is the first visible value and 1 is the last visible value.
  * Returns values outside this range when the values extend beyond the visible range.
  */
-public final class RelativePosMapper<V extends Number> implements Mapper<V, Double>,
+public final class RelativePosMapper<V extends Number> implements Mapper<V, Ranged>,
                                                                               AxisViewListener {
 
     private final boolean isIntegerValues;
@@ -48,16 +49,14 @@ public final class RelativePosMapper<V extends Number> implements Mapper<V, Doub
                axisType == Byte.class;
     }
 
-    @Override public Double convert(V sourceValue) {
+    @Override public Ranged convert(V sourceValue) {
         if (sourceValue == null) return null;
         else {
             if (isIntegerValues) {
-                if (lastVisibleAsLong == firstVisibleAsLong) return 0.5;
-                else return (double)(sourceValue.longValue() - firstVisibleAsLong) / (lastVisibleAsLong - firstVisibleAsLong);
+                return new Ranged(sourceValue.longValue(), firstVisibleAsLong, lastVisibleAsLong);
             }
             else {
-                if (lastVisibleAsDouble == firstVisibleAsDouble) return 0.5;
-                else return (sourceValue.doubleValue() - firstVisibleAsDouble) / (lastVisibleAsDouble - firstVisibleAsDouble);
+                return new Ranged(sourceValue.doubleValue(), firstVisibleAsDouble, lastVisibleAsDouble);
             }
         }
     }

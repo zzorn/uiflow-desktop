@@ -27,7 +27,7 @@
       <dependency>
           <groupId>org.flowutils</groupId>
           <artifactId>flowutils</artifactId>
-          <version>0.1.39</version>
+          <version>0.1.42</version>
       </dependency>
 
       <!-- Logging facade -->
