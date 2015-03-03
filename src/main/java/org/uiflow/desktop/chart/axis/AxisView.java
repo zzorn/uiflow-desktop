@@ -1,11 +1,10 @@
 package org.uiflow.desktop.chart.axis;
 
-import com.sun.corba.se.impl.orbutil.graph.Graph;
+import org.flowutils.collections.dataseries.Axis;
 import org.uiflow.desktop.ui.Renderable;
 import org.uiflow.desktop.ui.UiComponent;
 
 import java.awt.*;
-import java.awt.font.FontRenderContext;
 
 /**
  *

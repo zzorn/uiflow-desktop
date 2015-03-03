@@ -11,7 +11,7 @@ import static org.flowutils.MathUtils.mix;
 /**
  * Simple Swing color gradient.
  */
-public class ColorGradient implements ColorFunction {
+public class ColorGradient extends ColorFunctionBase {
 
     private final TreeMap<Double, Color> colors = new TreeMap<Double, Color>();
 
@@ -126,10 +126,6 @@ public class ColorGradient implements ColorFunction {
 
     @Override public Color colorForValue(double value) {
         return getColor(value);
-    }
-
-    @Override public int colorCodeForValue(double value) {
-        return getColor(value).getRGB();
     }
 
     private Color mixColor(double t, Color base, Color top) {

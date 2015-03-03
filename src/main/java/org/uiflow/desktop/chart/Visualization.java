@@ -1,6 +1,7 @@
 package org.uiflow.desktop.chart;
 
-import org.uiflow.desktop.chart.dataseries.DataSeries;
+
+import org.flowutils.collections.dataseries.DataSeries;
 
 import java.util.List;
 

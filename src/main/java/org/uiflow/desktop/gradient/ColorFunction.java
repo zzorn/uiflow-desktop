@@ -1,11 +1,13 @@
 package org.uiflow.desktop.gradient;
 
+import org.flowutils.mapping.Mapper;
+
 import java.awt.*;
 
 /**
  * Interface for a function from real values to Swing colors.
  */
-public interface ColorFunction {
+public interface ColorFunction extends Mapper<Double, Color> {
 
     /**
      * @return the color for the specified value.

@@ -1,19 +1,17 @@
-package org.uiflow.desktop.chart.dataseries;
+package org.uiflow.desktop.chart.axis;
 
 import org.flowutils.Ranged;
-import org.uiflow.desktop.chart.axis.Axis;
-import org.uiflow.desktop.chart.axis.AxisView;
-import org.uiflow.desktop.chart.axis.AxisViewListener;
-import org.uiflow.desktop.utils.Mapper;
+import org.flowutils.collections.dataseries.Axis;
+import org.flowutils.mapping.Mapper;
 
-import static org.flowutils.Check.notNull;
+import static org.flowutils.Check.*;
+
 
 /**
  * Converts values to the range 0..1, where 0 is the first visible value and 1 is the last visible value.
  * Returns values outside this range when the values extend beyond the visible range.
  */
-public final class RelativePosMapper<V extends Number> implements Mapper<V, Ranged>,
-                                                                              AxisViewListener {
+public final class RelativePosMapper<V extends Number> implements Mapper<V, Ranged>, AxisViewListener {
 
     private final boolean isIntegerValues;
     private final AxisView<V> valueAxisView;
@@ -45,7 +43,7 @@ public final class RelativePosMapper<V extends Number> implements Mapper<V, Rang
         final Class<V> axisType = valueAxisView.getAxis().getType();
         return axisType == Long.class ||
                axisType == Integer.class ||
-               axisType == Short.class ||
+               axisType == java.lang.Short.class ||
                axisType == Byte.class;
     }
 

@@ -1,6 +1,6 @@
 package org.uiflow.desktop.chart;
 
-import org.uiflow.desktop.chart.axis.Axis;
+import org.flowutils.collections.dataseries.Axis;
 import org.uiflow.desktop.chart.axis.AxisOrientation;
 import org.uiflow.desktop.chart.axis.AxisProjection;
 import org.uiflow.desktop.chart.axis.AxisView;

@@ -1,6 +1,8 @@
 package org.uiflow.desktop.chart;
 
 import org.flowutils.Check;
+import org.flowutils.collections.dataseries.Axis;
+import org.flowutils.collections.dataseries.TimeAxis;
 import org.uiflow.desktop.chart.axis.*;
 import org.uiflow.desktop.chart.chartlayer.ChartLayer;
 import org.uiflow.desktop.ui.RenderableUiComponent;

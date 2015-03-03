@@ -8,7 +8,7 @@ import static org.flowutils.Check.notNull;
 /**
  * A constant color function that returns the same color for all values.
  */
-public final class SolidColorFunction implements ColorFunction {
+public final class SolidColorFunction extends ColorFunctionBase {
 
     private Color color;
     private int colorCode;

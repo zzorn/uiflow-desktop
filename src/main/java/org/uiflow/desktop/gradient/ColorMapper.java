@@ -1,9 +1,9 @@
-package org.uiflow.desktop.utils;
+package org.uiflow.desktop.gradient;
 
 import org.flowutils.Check;
-import org.uiflow.desktop.gradient.ColorFunction;
+import org.flowutils.mapping.Mapper;
 
-import java.awt.*;
+import java.awt.Color;import java.lang.Number;import java.lang.Override;
 
 import static org.flowutils.Check.notNull;
 
@@ -11,6 +11,7 @@ import static org.flowutils.Check.notNull;
  * Converts source values to a color using some ColorFunction (e.g. a ColorGradient).
  * Optionally maps the source value to a more suitable range for the color function first, using scaling and offsets.
  */
+// NOTE: Somewhat superfluous now that ColorFunction implements Mapper<Double, Color>
 public final class ColorMapper<S extends Number> implements Mapper<S, Color> {
 
     private static final Color DEFAULT_COLOR = Color.DARK_GRAY;

@@ -2,6 +2,7 @@ package org.uiflow.desktop.chart.axis;
 
 import org.flowutils.Check;
 import org.flowutils.MathUtils;
+import org.flowutils.collections.dataseries.Axis;
 import org.uiflow.desktop.ui.RenderableUiComponent;
 
 import java.awt.*;

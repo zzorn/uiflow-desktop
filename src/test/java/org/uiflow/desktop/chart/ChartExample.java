@@ -1,16 +1,13 @@
 package org.uiflow.desktop.chart;
 
 import org.flowutils.Ranged;
+import org.flowutils.collections.dataseries.*;
 import org.uiflow.desktop.chart.axis.*;
 import org.uiflow.desktop.chart.chartlayer.BarLayer;
 import org.uiflow.desktop.chart.chartlayer.LineLayer;
-import org.uiflow.desktop.chart.dataseries.ArrayListDataSeries;
-import org.uiflow.desktop.chart.dataseries.DataSeries;
-import org.uiflow.desktop.chart.dataseries.DataSeriesBase;
-import org.uiflow.desktop.chart.dataseries.RelativePosMapper;
 import org.uiflow.desktop.gradient.ColorGradients;
+import org.uiflow.desktop.gradient.ColorMapper;
 import org.uiflow.desktop.ui.SimpleFrame;
-import org.uiflow.desktop.utils.ColorMapper;
 
 import java.util.Date;
 

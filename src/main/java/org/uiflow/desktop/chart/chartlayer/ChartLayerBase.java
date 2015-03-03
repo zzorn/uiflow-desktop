@@ -1,8 +1,8 @@
 package org.uiflow.desktop.chart.chartlayer;
 
 import org.flowutils.Ranged;
-import org.uiflow.desktop.chart.axis.Axis;
-import org.uiflow.desktop.chart.dataseries.DataSeries;
+import org.flowutils.collections.dataseries.Axis;
+import org.flowutils.collections.dataseries.DataSeries;
 
 import java.awt.*;
 import java.util.Collection;

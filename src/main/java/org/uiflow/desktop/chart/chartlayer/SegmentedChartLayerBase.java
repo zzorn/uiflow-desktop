@@ -2,8 +2,8 @@ package org.uiflow.desktop.chart.chartlayer;
 
 import org.flowutils.Check;
 import org.flowutils.ClassUtils;
-import org.uiflow.desktop.chart.axis.Axis;
-import org.uiflow.desktop.chart.dataseries.IndexedDataSeries;
+import org.flowutils.collections.dataseries.Axis;
+import org.flowutils.collections.dataseries.IndexedDataSeries;
 
 import java.awt.*;
 import java.util.Iterator;

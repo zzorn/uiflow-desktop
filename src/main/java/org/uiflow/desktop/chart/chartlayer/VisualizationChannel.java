@@ -1,11 +1,11 @@
 package org.uiflow.desktop.chart.chartlayer;
 
 import org.flowutils.MathUtils;
-import org.uiflow.desktop.chart.axis.Axis;
-import org.uiflow.desktop.chart.dataseries.DataSeries;
-import org.uiflow.desktop.chart.dataseries.DataSeriesConverter;
-import org.uiflow.desktop.utils.ChainedMapper;
-import org.uiflow.desktop.utils.Mapper;
+import org.flowutils.collections.dataseries.Axis;
+import org.flowutils.collections.dataseries.DataSeries;
+import org.flowutils.collections.dataseries.DataSeriesConverter;
+import org.flowutils.mapping.ChainedMapper;
+import org.flowutils.mapping.Mapper;
 
 import java.util.ArrayList;
 import java.util.List;
