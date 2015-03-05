@@ -2,8 +2,9 @@ package org.uiflow.desktop.drawcontext;
 
 import org.flowutils.Check;
 import org.flowutils.MathUtils;
+import org.flowutils.drawcontext.DrawContext;
+import org.flowutils.drawcontext.DrawContextBase;
 
-import javax.swing.*;
 import java.awt.*;
 
 import static org.flowutils.Check.notNull;
@@ -15,8 +16,6 @@ import static org.flowutils.Check.notNull;
 public final class SwingDrawContext extends DrawContextBase<Color, Font, Image> {
 
     private Graphics2D g2;
-    private int width;
-    private int height;
 
     // Temporary arrays to hold triangle coordiantes.
     private final int[] triangleXCoords = new int[3];
@@ -32,12 +31,25 @@ public final class SwingDrawContext extends DrawContextBase<Color, Font, Image> 
 
     /**
      * Creates a new SwingDrawContext with the specified Graphics context, and context size.
+     * The upper left corner of the DrawContext will be at 0,0 on the graphics context g.
      * @param g Graphics context
-     * @param width width that can be drawn on
-     * @param height height that can be drawn on
+     * @param width width of the DrawContext in pixels.
+     * @param height height of the DrawContext in pixels.
      */
     public SwingDrawContext(Graphics g, int width, int height) {
         setContext(g, width, height);
+    }
+
+    /**
+     * Creates a new SwingDrawContext with the specified Graphics context, and context area inside the graphics area.
+     * @param g Graphics context
+     * @param startX x coordinate on graphics context that should equal 0 in the drawContext.
+     * @param startY y coordinate on graphics context that should equal 0 in the drawContext.
+     * @param width width of the DrawContext in pixels.
+     * @param height height of the DrawContext in pixels.
+     */
+    public SwingDrawContext(Graphics g, int startX, int startY, int width, int height) {
+        setContext(g, startX, startY, width, height);
     }
 
     /**
@@ -49,42 +61,70 @@ public final class SwingDrawContext extends DrawContextBase<Color, Font, Image> 
         setContext(g, component);
     }
 
+    /**
+     * Set the graphics context and the area of it to be used by this DrawContext.
+     * The upper left corner of the DrawContext will be at 0,0 on the graphics context g.
+     * @param g graphics context
+     * @param component component to use to get the width and height to use for the DrawContext.
+     */
     public void setContext(Graphics g, Component component) {
         notNull(component, "component");
         setContext(g, component.getWidth(), component.getHeight());
     }
 
+    /**
+     * Set the graphics context and the area of it to be used by this DrawContext.
+     * The upper left corner of the DrawContext will be at 0,0 on the graphics context g.
+     * @param g graphics context
+     * @param width width of the DrawContext in pixels.
+     * @param height height of the DrawContext in pixels.
+     */
     public void setContext(Graphics g, int width, int height) {
-        setGraphics2D((Graphics2D) g);
-        setWidth(width);
-        setHeight(height);
+        Check.positive(width, "width");
+        Check.positive(height, "height");
+        setContext(g, 0, 0, width, height);
     }
 
+    /**
+     * Set the graphics context and the area of it to be used by this DrawContext.
+     * @param g graphics context
+     * @param startX x coordinate on graphics context that should equal 0 in the drawContext.
+     * @param startY y coordinate on graphics context that should equal 0 in the drawContext.
+     * @param width width of the DrawContext in pixels.
+     * @param height height of the DrawContext in pixels.
+     */
+    public void setContext(Graphics g, int startX, int startY, int width, int height) {
+        setGraphics2D((Graphics2D) g);
+        setContextSize(startX, startY, width, height);
+    }
+
+    /**
+     * @return graphics context used by this DrawContext.
+     */
     public Graphics2D getGraphics2D() {
         return g2;
     }
 
-    public void setGraphics2D(Graphics2D g2) {
-        notNull(g2, "g2");
-        this.g2 = g2;
+    /**
+     * @param g Graphics context to use.
+     */
+    public void setGraphics2D(Graphics g) {
+        notNull(g, "g");
+        this.g2 = (Graphics2D) g;
     }
 
+    /**
+     * @param width width of the graphics area to use.
+     */
     public void setWidth(int width) {
-        Check.positive(width, "width");
-        this.width = width;
+        super.setWidth(width);
     }
 
+    /**
+     * @param height height of the graphics area to use.
+     */
     public void setHeight(int height) {
-        Check.positive(height, "height");
-        this.height = height;
-    }
-
-    @Override public float getWidth() {
-        return width;
-    }
-
-    @Override public float getHeight() {
-        return height;
+        super.setHeight(height);
     }
 
     @Override public float getPixelsPerInch() {
@@ -137,36 +177,37 @@ public final class SwingDrawContext extends DrawContextBase<Color, Font, Image> 
         return wasAntialias;
     }
 
-    @Override public void drawLine(Color color, float x1, float y1, float x2, float y2) {
-        g2.setColor(color);
-        g2.drawLine((int) x1, (int) y1, (int) x2, (int) y2);
-    }
 
-    @Override public void drawLine(Color color, float x1, float y1, float x2, float y2, float lineWidth) {
+    @Override protected void doDrawLine(Color color, float x1, float y1, float x2, float y2, float lineWidth) {
         g2.setColor(color);
         final Stroke oldStroke = setLineWidth(lineWidth);
         g2.drawLine((int) x1, (int) y1, (int) x2, (int) y2);
         g2.setStroke(oldStroke);
     }
 
-    @Override public void drawRectangle(Color color, float x1, float y1, float width, float height, float lineWidth) {
+    @Override protected void doDrawRectangle(Color color,
+                                             float x1,
+                                             float y1,
+                                             float width,
+                                             float height,
+                                             float lineWidth) {
         g2.setColor(color);
         final Stroke oldStroke = setLineWidth(lineWidth);
         g2.drawRect((int) x1, (int) y1, (int) width, (int) height);
         g2.setStroke(oldStroke);
     }
 
-    @Override public void fillRectangle(Color fillColor, float x1, float y1, float width, float height) {
+    @Override protected void doFillRectangle(Color fillColor, float x1, float y1, float width, float height) {
         g2.setColor(fillColor);
         g2.fillRect((int) x1, (int) y1, (int) width, (int) height);
     }
 
-    @Override public void drawOval(Color color,
-                                   float centerX,
-                                   float centerY,
-                                   float width,
-                                   float height,
-                                   float lineWidth) {
+    @Override protected void doDrawOval(Color color,
+                                        float centerX,
+                                        float centerY,
+                                        float width,
+                                        float height,
+                                        float lineWidth) {
         g2.setColor(color);
         final Stroke oldStroke = setLineWidth(lineWidth);
         g2.drawOval((int) (centerX - 0.5f * width),
@@ -176,7 +217,7 @@ public final class SwingDrawContext extends DrawContextBase<Color, Font, Image> 
         g2.setStroke(oldStroke);
     }
 
-    @Override public void fillOval(Color fillColor, float centerX, float centerY, float width, float height) {
+    @Override protected void doFillOval(Color fillColor, float centerX, float centerY, float width, float height) {
         g2.setColor(fillColor);
         g2.fillOval((int) (centerX - 0.5f * width),
                     (int) (centerY - 0.5f * height),
@@ -184,14 +225,14 @@ public final class SwingDrawContext extends DrawContextBase<Color, Font, Image> 
                     (int) height);
     }
 
-    @Override public void drawTriangle(Color color,
-                                       float x1,
-                                       float y1,
-                                       float x2,
-                                       float y2,
-                                       float x3,
-                                       float y3,
-                                       float lineWidth) {
+    @Override protected void doDrawTriangle(Color color,
+                                            float x1,
+                                            float y1,
+                                            float x2,
+                                            float y2,
+                                            float x3,
+                                            float y3,
+                                            float lineWidth) {
         g2.setColor(color);
         final Stroke oldStroke = setLineWidth(lineWidth);
         triangleXCoords[0] = (int) x1;
@@ -204,7 +245,13 @@ public final class SwingDrawContext extends DrawContextBase<Color, Font, Image> 
         g2.setStroke(oldStroke);
     }
 
-    @Override public void fillTriangle(Color fillColor, float x1, float y1, float x2, float y2, float x3, float y3) {
+    @Override protected void doFillTriangle(Color fillColor,
+                                            float x1,
+                                            float y1,
+                                            float x2,
+                                            float y2,
+                                            float x3,
+                                            float y3) {
         g2.setColor(fillColor);
         triangleXCoords[0] = (int) x1;
         triangleXCoords[1] = (int) x2;
@@ -215,8 +262,13 @@ public final class SwingDrawContext extends DrawContextBase<Color, Font, Image> 
         g2.fillPolygon(triangleXCoords, triangleYCoords, 3);
     }
 
-
-    @Override public void drawText(Color color, float x, float y, String text, Font font, float alignX, float alignY) {
+    @Override protected void doDrawText(Color color,
+                                        float x,
+                                        float y,
+                                        String text,
+                                        Font font,
+                                        float alignX,
+                                        float alignY) {
         g2.setColor(color);
         final Font oldFont = g2.getFont();
         g2.setFont(font);
@@ -232,12 +284,16 @@ public final class SwingDrawContext extends DrawContextBase<Color, Font, Image> 
         g2.setFont(oldFont);
     }
 
-    @Override public void drawImage(Image image, float x, float y) {
+    @Override protected void doDrawImage(Image image, float x, float y) {
         g2.drawImage(image, (int)x, (int)y, null);
     }
 
-    @Override public void drawImage(Image image, float x, float y, float width, float height) {
+    @Override protected void doDrawImage(Image image, float x, float y, float width, float height) {
         g2.drawImage(image, (int)x, (int)y, (int)width, (int)height, null);
+    }
+
+    @Override protected SwingDrawContext doCreateSubContext(float startX, float startY, float width, float height) {
+        return new SwingDrawContext(g2, (int) startX, (int) startY, (int) width, (int) height);
     }
 
     /**
