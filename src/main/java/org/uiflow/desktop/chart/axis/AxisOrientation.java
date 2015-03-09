@@ -1,8 +1,9 @@
 package org.uiflow.desktop.chart.axis;
 
 import org.flowutils.MathUtils;
+import org.flowutils.rectangle.MutableRectangle;
+import org.flowutils.rectangle.Rectangle;
 
-import java.awt.*;
 
 /**
  *
@@ -64,36 +65,36 @@ public enum AxisOrientation {
         return (int) MathUtils.mix(relativePos, minCoordiante, maxCoordinate);
     }
 
-    public void splitArea(Rectangle availableArea, Rectangle preferredAreaOut, int thickness) {
-        int x = availableArea.x;
-        int y = availableArea.y;
-        int w = availableArea.width;
-        int h = availableArea.height;
+    public void splitArea(MutableRectangle availableArea, MutableRectangle preferredAreaOut, float thickness) {
+        double x = availableArea.getX();
+        double y = availableArea.getY();
+        double w = availableArea.getWidth();
+        double h = availableArea.getHeight();
 
         if (horizontal) {
             if (before) {
-                availableArea.y += thickness;
+                availableArea.changeMinY(thickness);
             } else {
+                availableArea.changeMaxY(-thickness);
                 y += h - thickness;
             }
 
             h = thickness;
-            availableArea.height -= thickness;
         }
         else {
             if (before) {
-                availableArea.x += thickness;
+                availableArea.changeMinX(thickness);
             }
             else {
+                availableArea.changeMaxX(-thickness);
                 x += w - thickness;
             }
 
             w = thickness;
-            availableArea.width -= thickness;
         }
 
         if (preferredAreaOut != null) {
-            preferredAreaOut.setBounds(x, y, w, h);
+            preferredAreaOut.set(x, y, x+w, y+h);
         }
     }
 }

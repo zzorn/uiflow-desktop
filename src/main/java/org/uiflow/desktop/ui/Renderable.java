@@ -1,6 +1,6 @@
 package org.uiflow.desktop.ui;
 
-import java.awt.*;
+import org.flowutils.drawcontext.DrawContext;
 
 /**
  * Something that can be rendered to a graphics context.
@@ -8,9 +8,8 @@ import java.awt.*;
 public interface Renderable {
 
     /**
-     * @param g2 graphics context to draw to.
-     * @param renderArea the area to render this renderable in.
+     * @param drawContext context to draw on.
      */
-    void render(Graphics2D g2, Rectangle renderArea);
+    void render(DrawContext drawContext);
 
 }

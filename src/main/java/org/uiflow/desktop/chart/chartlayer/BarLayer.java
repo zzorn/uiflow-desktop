@@ -2,8 +2,11 @@ package org.uiflow.desktop.chart.chartlayer;
 
 import org.flowutils.Ranged;
 import org.flowutils.collections.dataseries.Axis;
+import org.flowutils.drawcontext.DrawContext;
+import org.flowutils.rectangle.Rectangle;
 
-import java.awt.*;
+import java.awt.Color;
+
 
 /**
  *
@@ -27,18 +30,18 @@ public class BarLayer<T extends Number, V extends Number> extends SegmentedChart
         barWidth = addRangedChannel("Width");
     }
 
-    @Override protected void renderSegment(Graphics2D g2, Rectangle segmentArea, int segmentIndex, int numberOfVisibleSegments) {
+    @Override protected void renderSegment(DrawContext drawContext,
+                                           Rectangle segmentArea,
+                                           int segmentIndex,
+                                           int numberOfVisibleSegments) {
         Color color = barColor.getVisibleValue(segmentIndex, Color.DARK_GRAY);
-        int height = (int) (segmentArea.height * barHeight.getVisibleValueRelativePos(segmentIndex, getFirstVertical(), getLastVertical(), 0));
-        final int y = segmentArea.y + segmentArea.height - height;
+        float height = (float) (segmentArea.getSizeY() * barHeight.getVisibleValueRelativePos(segmentIndex, getFirstVertical(), getLastVertical(), 0));
+        final float y = (float) segmentArea.getMinY() + (float) segmentArea.getSizeY()- height;
 
-        int width = barWidth.getVisibleValue(segmentIndex, DEFAULT_SEGMENT_WIDTH).map(segmentArea.width);
-        int x =  segmentArea.x + (segmentArea.width - width) / 2;
+        float width = (float) barWidth.getVisibleValue(segmentIndex, DEFAULT_SEGMENT_WIDTH).map(segmentArea.getSizeX());
+        float x = (float) (segmentArea.getMinX() + (segmentArea.getSizeX() - width) / 2f);
 
-        g2.setColor(color.darker());
-        g2.fillRect(x, y, width, height);
-        g2.setColor(color);
-        g2.fillRect(x+edgeThickness, y+edgeThickness, width-2*edgeThickness, height-2*edgeThickness);
+        drawContext.outlineRectangle(color.darker(), x, y, width, height, color, edgeThickness);
     }
 
 }

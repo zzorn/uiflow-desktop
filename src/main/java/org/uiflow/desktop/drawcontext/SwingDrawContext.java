@@ -99,6 +99,13 @@ public final class SwingDrawContext extends DrawContextBase<Color, Font, Image> 
     }
 
     /**
+     * Removes any reference to Graphics objects.
+     */
+    public void clearContext() {
+        this.g2 = null;
+    }
+
+    /**
      * @return graphics context used by this DrawContext.
      */
     public Graphics2D getGraphics2D() {
@@ -303,8 +310,61 @@ public final class SwingDrawContext extends DrawContextBase<Color, Font, Image> 
     private Stroke setLineWidth(float width) {
         final Stroke oldStroke = g2.getStroke();
         if (width != 1) {
-            g2.setStroke(new BasicStroke(width));
+            g2.setStroke(new BasicStroke(width, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
         }
         return oldStroke;
+    }
+
+    @Override public Color getColor(float red, float green, float blue, float alpha) {
+        return new Color(red, green, blue, alpha);
+    }
+
+    @Override public Color getColorFromHSL(float hue, float saturation, float luminance, float alpha) {
+        // TODO: Replace with better version
+        int colorCode = Color.HSBtoRGB(hue, saturation, luminance);
+        colorCode = colorCode & 0x00FFFFFF;
+        colorCode = colorCode | ((MathUtils.clamp((int) (alpha * 255), 0, 255) & 0xFF) << ALPHA_SHIFT);
+        return new Color(colorCode, true);
+    }
+
+    @Override public Color getColorFromColorCode(int colorCode) {
+        return new Color(colorCode, true);
+    }
+
+    @Override public float getRed(Color color) {
+        return color.getRed() / 255f;
+    }
+
+    @Override public float getGreen(Color color) {
+        return color.getGreen() / 255f;
+    }
+
+    @Override public float getBlue(Color color) {
+        return color.getBlue() / 255f;
+    }
+
+    @Override public float getAlpha(Color color) {
+        return color.getAlpha() / 255f;
+    }
+
+    @Override public float getHue(Color color) {
+        // TODO: Replace with better version
+        float[] hsbVals = new float[3];
+        Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), hsbVals);
+        return hsbVals[0];
+    }
+
+    @Override public float getSaturation(Color color) {
+        // TODO: Replace with better version
+        float[] hsbVals = new float[3];
+        Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), hsbVals);
+        return hsbVals[1];
+    }
+
+    @Override public float getLuminance(Color color) {
+        // TODO: Replace with better version
+        float[] hsbVals = new float[3];
+        Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), hsbVals);
+        return hsbVals[2];
     }
 }

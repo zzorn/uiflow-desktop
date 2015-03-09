@@ -3,10 +3,12 @@ package org.uiflow.desktop.chart.axis;
 import org.flowutils.Check;
 import org.flowutils.MathUtils;
 import org.flowutils.collections.dataseries.Axis;
+import org.flowutils.drawcontext.DrawContext;
+import org.flowutils.rectangle.MutableRectangle;
+import org.flowutils.rectangle.Rectangle;
 import org.uiflow.desktop.ui.RenderableUiComponent;
 
 import java.awt.*;
-import java.awt.geom.Rectangle2D;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -24,11 +26,11 @@ public class DefaultAxisView<T extends Number> extends RenderableUiComponent imp
 
     private static final NumberFormat NUMBER_FORMAT = new DecimalFormat("#.###");
 
-    private Color backgroundColor = new Color(0,0,0);
-    private Color outlineColor = new Color(130, 130, 130);
-    private Color tickColor = new Color(200, 200, 200);
-    private Color labelColor = new Color(230, 230, 230);
-    private Font labelFont;
+    private int backgroundColor = new Color(0,0,0).getRGB();
+    private int outlineColor = new Color(130, 130, 130).getRGB();
+    private int tickColor = new Color(200, 200, 200).getRGB();
+    private int labelColor = new Color(230, 230, 230).getRGB();
+    private Object labelFont;
     private int margin = DEFAULT_MARGIN;
 
     private final Axis<T> axis;
@@ -148,30 +150,27 @@ public class DefaultAxisView<T extends Number> extends RenderableUiComponent imp
         return (int) MathUtils.mix(relativeLocation, startCoordinate, endCoordinate);
     }
 
-    @Override public final Color getBackgroundColor() {
+    @Override public final int getBackgroundColor() {
         return backgroundColor;
     }
 
-    @Override public final void setBackgroundColor(Color backgroundColor) {
-        notNull(backgroundColor, "backgroundColor");
+    @Override public final void setBackgroundColor(int backgroundColor) {
         this.backgroundColor = backgroundColor;
     }
 
-    @Override public final Color getLabelColor() {
+    @Override public final int getLabelColor() {
         return labelColor;
     }
 
-    @Override public final void setLabelColor(Color labelColor) {
-        notNull(labelColor, "labelColor");
+    @Override public final void setLabelColor(int labelColor) {
         this.labelColor = labelColor;
     }
 
-    @Override public final Color getTickColor() {
+    @Override public final int getTickColor() {
         return tickColor;
     }
 
-    @Override public final void setTickColor(Color tickColor) {
-        notNull(tickColor, "tickColor");
+    @Override public final void setTickColor(int tickColor) {
         this.tickColor = tickColor;
     }
 
@@ -184,15 +183,15 @@ public class DefaultAxisView<T extends Number> extends RenderableUiComponent imp
         listeners.remove(listener);
     }
 
-    public Color getOutlineColor() {
+    public int getOutlineColor() {
         return outlineColor;
     }
 
-    public void setOutlineColor(Color outlineColor) {
+    public void setOutlineColor(int outlineColor) {
         this.outlineColor = outlineColor;
     }
 
-    public Font getLabelFont() {
+    public Object getLabelFont() {
         return labelFont;
     }
 
@@ -209,41 +208,48 @@ public class DefaultAxisView<T extends Number> extends RenderableUiComponent imp
         this.margin = margin;
     }
 
-    @Override public void calculateChartArea(Rectangle availableArea, Graphics2D g2) {
+    @Override public void calculateChartArea(MutableRectangle availableArea, DrawContext drawContext) {
         notNull(availableArea, "availableArea");
-        notNull(g2, "g2");
-        orientation.splitArea(availableArea, null, getPreferredThickness_pixels(g2));
+        notNull(drawContext, "drawContext");
+
+        orientation.splitArea(availableArea, null, getPreferredThickness_pixels(drawContext));
     }
 
-    @Override public void calculatePreferredArea(Rectangle availableArea, Rectangle chartArea, Rectangle preferredAreaOut, Graphics2D g2) {
+    @Override public void calculatePreferredArea(MutableRectangle availableArea,
+                                                 Rectangle chartArea,
+                                                 MutableRectangle preferredAreaOut,
+                                                 DrawContext drawContext) {
         notNull(availableArea, "availableArea");
         notNull(chartArea, "chartArea");
         notNull(preferredAreaOut, "preferredAreaOut");
-        notNull(g2, "g2");
+        notNull(drawContext, "drawContext");
 
-        orientation.splitArea(availableArea, preferredAreaOut, getPreferredThickness_pixels(g2));
+        orientation.splitArea(availableArea, preferredAreaOut, getPreferredThickness_pixels(drawContext));
 
         if (orientation.isHorizontal()) {
-            preferredAreaOut.x = chartArea.x;
-            preferredAreaOut.width = chartArea.width;
+            preferredAreaOut.setX(chartArea.getMinX(), chartArea.getMaxX());
         }
         else {
-            preferredAreaOut.y = chartArea.y;
-            preferredAreaOut.height = chartArea.height;
+            preferredAreaOut.setY(chartArea.getMinY(), chartArea.getMaxY());
         }
     }
 
-    @Override public void render(Graphics2D g2, Rectangle axisArea) {
-        ensureLabelFontAvailable(g2);
+    @Override public void render(DrawContext dc) {
+        final Rectangle axisArea = dc.getSize();
+        ensureLabelFontAvailable(dc);
 
         // Draw background
-        g2.setColor(backgroundColor);
-        g2.fillRect(axisArea.x, axisArea.y, axisArea.width, axisArea.height);
-        drawLine(g2, axisArea, outlineColor, 0, 0, 1, 0);
-        drawLine(g2, axisArea, outlineColor, 0, 1, 1, 1);
-        drawLine(g2, axisArea, outlineColor, 0, 0, 0, 1);
-        drawLine(g2, axisArea, outlineColor, 1, 0, 1, 1);
+        dc.clear(dc.getColorFromColorCode(backgroundColor));
 
+        final Object outlineCol = dc.getColorFromColorCode(outlineColor);
+        drawLine(dc, outlineCol, 0, 0, 1, 0, axisArea);
+        drawLine(dc, outlineCol, 0, 1, 1, 1, axisArea);
+        drawLine(dc, outlineCol, 0, 0, 0, 1, axisArea);
+        drawLine(dc, outlineCol, 1, 0, 1, 1, axisArea);
+
+
+        final Object tickCol = dc.getColorFromColorCode(tickColor);
+        final Object labelCol = dc.getColorFromColorCode(labelColor);
         if (hasSpecifiedRange()) {
             for (int i = 0; i < numberOfTicks; i++) {
                 // Determine tick location
@@ -256,36 +262,22 @@ public class DefaultAxisView<T extends Number> extends RenderableUiComponent imp
                                                                              getLastVisible());
 
                 // Draw tick line
-                drawLine(g2, axisArea, tickColor, relativeAxisPos, 0, relativeAxisPos, 0.1);
+                drawLine(dc, tickCol, relativeAxisPos, 0, relativeAxisPos, 0.1, axisArea);
 
                 // Draw tick label
                 int labelX = orientation.getX(relativeAxisPos, 0.5, axisArea);
                 int labelY = orientation.getY(relativeAxisPos, 0.5, axisArea);
 
                 final String tickLabel = createTickLabel(roundAxisValue);
-                drawText(g2, labelColor, labelFont, labelX, labelY, tickLabel);
+                dc.drawText(labelCol, labelX, labelY, tickLabel, labelFont, 0.5f, 0.5f);
             }
         }
     }
 
-    private void drawText(Graphics2D g2,
-                          final Color color,
-                          final Font labelFont,
-                          int x,
-                          int y,
-                          String text) {
-        g2.setColor(color);
-        final Font previousFont = g2.getFont();
-        g2.setFont(labelFont);
-        final Rectangle2D stringBounds = labelFont.getStringBounds(text, g2.getFontRenderContext());
-        g2.drawString(text, x - (int) stringBounds.getCenterX(), y - (int) stringBounds.getCenterY());
-        g2.setFont(previousFont);
-    }
-
-    private void ensureLabelFontAvailable(Graphics2D g2) {
+    private void ensureLabelFontAvailable(DrawContext drawContext) {
         // Make sure we have a label font
         if (labelFont == null) {
-            labelFont = g2.getFont();
+            labelFont = drawContext.getDefaultFont();
         }
     }
 
@@ -294,19 +286,18 @@ public class DefaultAxisView<T extends Number> extends RenderableUiComponent imp
                lastVisible != null;
     }
 
-    private void drawLine(Graphics2D g2, Rectangle axisArea,
-                          final Color color,
+    private void drawLine(DrawContext drawContext,
+                          final Object color,
                           double axisPos1,
                           double acrossPos1,
                           double axisPos2,
-                          double acrossPos2) {
+                          double acrossPos2, final Rectangle axisArea) {
         int x1 = orientation.getX(axisPos1, acrossPos1, axisArea);
         int y1 = orientation.getY(axisPos1, acrossPos1, axisArea);
         int x2 = orientation.getX(axisPos2, acrossPos2, axisArea);
         int y2 = orientation.getY(axisPos2, acrossPos2, axisArea);
 
-        g2.setColor(color);
-        g2.drawLine(x1, y1, x2, y2);
+        drawContext.drawLine(color, x1, y1, x2, y2);
     }
 
     private T getTickValue(int tickIndex, int maxTicks) {
@@ -322,17 +313,14 @@ public class DefaultAxisView<T extends Number> extends RenderableUiComponent imp
         return preferredValue;
     }
 
-    @Override public int getPreferredThickness_pixels(Graphics2D g2) {
-        ensureLabelFontAvailable(g2);
+    @Override public float getPreferredThickness_pixels(DrawContext drawContext) {
+        ensureLabelFontAvailable(drawContext);
 
-        final Rectangle2D stringBounds = labelFont.getStringBounds(MINIMUM_VISIBLE_LABEL, g2.getFontRenderContext());
-        int minX = (int) stringBounds.getWidth() + 2*margin;
-        int minY = (int) stringBounds.getHeight() + 2*margin;
         if (orientation.isHorizontal()) {
-            return minY;
+            return drawContext.getFontHeight(labelFont) + 2*margin;
         }
         else {
-            return minX;
+            return drawContext.getTextWidth(labelFont, MINIMUM_VISIBLE_LABEL) + 2*margin;
         }
     }
 

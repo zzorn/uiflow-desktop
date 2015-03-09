@@ -58,8 +58,8 @@ public interface Chart extends Renderable, UiComponent {
     boolean isCenterTitle();
     void setCenterTitle(boolean centerTitle);
 
-    Color getTitleColor();
-    void setTitleColor(Color titleColor);
+    int getTitleColor();
+    void setTitleColor(int titleColor);
 
 
 }

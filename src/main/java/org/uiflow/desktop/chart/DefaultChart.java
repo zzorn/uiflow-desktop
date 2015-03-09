@@ -3,8 +3,11 @@ package org.uiflow.desktop.chart;
 import org.flowutils.Check;
 import org.flowutils.collections.dataseries.Axis;
 import org.flowutils.collections.dataseries.TimeAxis;
+import org.flowutils.drawcontext.DrawContext;
+import org.flowutils.rectangle.MutableRectangle;
 import org.uiflow.desktop.chart.axis.*;
 import org.uiflow.desktop.chart.chartlayer.ChartLayer;
+import org.uiflow.desktop.drawcontext.SwingDrawContext;
 import org.uiflow.desktop.ui.RenderableUiComponent;
 
 import java.awt.*;
@@ -20,8 +23,9 @@ import static org.flowutils.Check.notNull;
  */
 public class DefaultChart extends RenderableUiComponent implements Chart {
 
-    private Color backgroundColor = new Color(0,0,0);
-    private Color titleColor = new Color(255, 255, 255);
+    private int backgroundColor = new Color(0,0,0).getRGB();
+    private int titleColor = new Color(255, 255, 255).getRGB();
+    private int titleShadowColor = new Color(0,0,0).getRGB();
     private String title;
     private boolean overlayTitle = true;
     private boolean centerTitle = true;
@@ -74,11 +78,11 @@ public class DefaultChart extends RenderableUiComponent implements Chart {
         this.centerTitle = centerTitle;
     }
 
-    @Override public final Color getTitleColor() {
+    @Override public final int getTitleColor() {
         return titleColor;
     }
 
-    @Override public final void setTitleColor(Color titleColor) {
+    @Override public final void setTitleColor(int titleColor) {
         this.titleColor = titleColor;
     }
 
@@ -209,72 +213,64 @@ public class DefaultChart extends RenderableUiComponent implements Chart {
         chartLayers.remove(chartLayer);
     }
 
-    public Color getBackgroundColor() {
+    public int getBackgroundColor() {
         return backgroundColor;
     }
 
-    public void setBackgroundColor(Color backgroundColor) {
+    public void setBackgroundColor(int backgroundColor) {
         this.backgroundColor = backgroundColor;
     }
 
-    @Override public void render(Graphics2D g2, Rectangle renderArea) {
+    @Override public void render(DrawContext dc) {
+
         // Smooth edges using anti-aliasing
-        final Object oldAntialias = g2.getRenderingHint(RenderingHints.KEY_ANTIALIASING);
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        final boolean oldAntialias = dc.setAntialias(true);
 
         // Draw background
-        g2.setColor(backgroundColor);
-        g2.fillRect(renderArea.x, renderArea.y, renderArea.width, renderArea.height);
+        dc.clear(dc.getColorFromColorCode(backgroundColor));
 
         // If title is not overlaid, reserve space for it at the top.
         final String title = getTitle();
-        int titleHeight = g2.getFontMetrics().getMaxAscent() +
-                          g2.getFontMetrics().getMaxDescent() +
-                          + 2 * titleMargin;
-        int titleY = renderArea.y + titleMargin + g2.getFontMetrics().getMaxAscent();
+        final Object defaultFont = dc.getDefaultFont();
+        float titleHeight = dc.getFontHeight(defaultFont) + 2 * titleMargin;
+        float titleY = dc.getFontHeightBaselineToTop(defaultFont) + titleMargin;
+
+        MutableRectangle renderArea = dc.getSize(new MutableRectangle());
         if (!overlayTitle) {
-            renderArea = new Rectangle(renderArea);
-            renderArea.y += titleHeight;
-            renderArea.height -= titleHeight;
+            renderArea.changeMinY(titleHeight);
         }
 
         // Calculate chart area
-        Rectangle chartArea = new Rectangle(renderArea);
+        MutableRectangle chartArea = new MutableRectangle(renderArea);
         for (AxisView axisView : axisViews.values()) {
-            axisView.calculateChartArea(chartArea, g2);
+            axisView.calculateChartArea(chartArea, dc);
         }
 
         // Draw axis
-        Rectangle axisDrawArea = new Rectangle(renderArea);
-        Rectangle axisArea = new Rectangle();
+        MutableRectangle axisDrawArea = new MutableRectangle(renderArea);
+        MutableRectangle axisArea = new MutableRectangle();
         for (AxisView axisView : axisViews.values()) {
-            axisView.calculatePreferredArea(axisDrawArea, chartArea, axisArea, g2);
-            axisView.render(g2, axisArea);
+            axisView.calculatePreferredArea(axisDrawArea, chartArea, axisArea, dc);
+            axisView.render(dc.subContext(axisArea));
         }
 
         // Draw chart layers
+        final DrawContext chartContext = dc.subContext(chartArea);
         for (ChartLayer chartLayer : chartLayers) {
-            chartLayer.render(g2, chartArea);
+            chartLayer.render(chartContext);
         }
 
         // Draw title
         if (title != null && !title.isEmpty()) {
-            int titleX;
-            if (centerTitle) {
-                titleX = chartArea.x + (chartArea.width - g2.getFontMetrics().stringWidth(title)) / 2;
-            }
-            else {
-                titleX = chartArea.x + titleMargin;
-            }
-            if (overlayTitle) {
-                titleY = chartArea.y + titleMargin + g2.getFontMetrics().getMaxAscent();
-            }
-
-            // TODO: Draw dropshadow.  Implement the draw command in a GraphicsContext utility class.
-            g2.setColor(titleColor);
-            g2.drawString(title, titleX, titleY);
+            dc.drawText(dc.getColorFromColorCode(titleColor),
+                        (float) chartArea.getCenterX(),
+                        (float) chartArea.getMinY() + titleHeight + titleMargin,
+                        title,
+                        dc.getDefaultFont(),
+                        0.5f, 0f,
+                        dc.getColorFromColorCode(titleShadowColor));
         }
 
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, oldAntialias);
+        dc.setAntialias(oldAntialias);
     }
 }

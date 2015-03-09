@@ -2,6 +2,8 @@ package org.uiflow.desktop.chart.chartlayer;
 
 import org.flowutils.MathUtils;
 import org.flowutils.collections.dataseries.Axis;
+import org.flowutils.drawcontext.DrawContext;
+import org.flowutils.rectangle.Rectangle;
 
 import java.awt.*;
 
@@ -91,19 +93,19 @@ public class LineLayer<T extends Number, V extends Number> extends SegmentedChar
         this.dropShadowOffsetFactor = dropShadowOffsetFactor;
     }
 
-    @Override public void render(Graphics2D g2, Rectangle renderArea) {
+    @Override public void render(DrawContext drawContext) {
 
         if (dropShadow) {
             renderDropShadowNow = true;
-            super.render(g2, renderArea);
+            super.render(drawContext);
         }
 
         renderDropShadowNow = false;
-        super.render(g2, renderArea);
+        super.render(drawContext);
     }
 
-    @Override protected void renderSegment(Graphics2D g2,
-                                           Rectangle segmentArea,
+    @Override protected void renderSegment(DrawContext drawContext,
+                                           org.flowutils.rectangle.Rectangle segmentArea,
                                            int segmentIndex,
                                            int numberOfVisibleSegments) {
 
@@ -126,9 +128,8 @@ public class LineLayer<T extends Number, V extends Number> extends SegmentedChar
                                                                        getLastVertical(),
                                                                        0);
 
-                // TODO: add average function to MathUtils
-                prevPos = MathUtils.mix(0.5, prevPos, currentPos);
-                nextPos = MathUtils.mix(0.5, nextPos, currentPos);
+                prevPos = MathUtils.average(prevPos, currentPos);
+                nextPos = MathUtils.average(nextPos, currentPos);
 
                 final Color color = lineColor.getVisibleValue(segmentIndex, defaultColor);
                 float thickness = MathUtils.clamp(this.thickness.getVisibleValue(segmentIndex, defaultLineThickness),
@@ -136,39 +137,35 @@ public class LineLayer<T extends Number, V extends Number> extends SegmentedChar
                                                   MAX_THICKNESS);
                 if (renderDropShadowNow) thickness *= dropShadowSizeFactor;
 
-                int x1 = (int) segmentArea.getMinX();
-                int x2 = (int) segmentArea.getCenterX();
-                int x3 = (int) segmentArea.getMaxX();
+                float x1 = (float) segmentArea.getMinX();
+                float x2 = (float) segmentArea.getCenterX();
+                float x3 = (float) segmentArea.getMaxX();
 
-                g2.setStroke(new BasicStroke(thickness, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-
-                if (hasPrevPos) drawLine(g2, color, thickness, segmentArea, prevPos, currentPos, x1, x2);
-                if (hasNextPos) drawLine(g2, color, thickness, segmentArea, currentPos, nextPos, x2, x3);
+                if (hasPrevPos) drawLine(drawContext, color, thickness, segmentArea, prevPos, currentPos, x1, x2);
+                if (hasNextPos) drawLine(drawContext, color, thickness, segmentArea, currentPos, nextPos, x2, x3);
             }
 
             // TODO: Draw marker
         }
     }
 
-    private void drawLine(Graphics2D g2,
+    private void drawLine(DrawContext drawContext,
                           Color color,
                           float thickness,
                           Rectangle segmentArea,
                           double prevPos,
                           double currentPos,
-                          int x1,
-                          int x2) {
-        int y1 = (int) MathUtils.mix(prevPos, segmentArea.getMaxY(), segmentArea.getMinY());
-        int y2 = (int) MathUtils.mix(currentPos, segmentArea.getMaxY(), segmentArea.getMinY());
+                          float x1,
+                          float x2) {
+        float y1 = (float) MathUtils.mix(prevPos, segmentArea.getMaxY(), segmentArea.getMinY());
+        float y2 = (float) MathUtils.mix(currentPos, segmentArea.getMaxY(), segmentArea.getMinY());
 
         if (renderDropShadowNow) {
-            int offs = (int) (thickness * dropShadowOffsetFactor);
-            g2.setColor(dropShadowColor);
-            g2.drawLine(x1+ offs, y1+ offs, x2+ offs, y2+ offs);
+            float offs = (int) (thickness * dropShadowOffsetFactor);
+            drawContext.drawLine(dropShadowColor, x1+ offs, y1+ offs, x2+ offs, y2+ offs, thickness);
         }
         else {
-            g2.setColor(color);
-            g2.drawLine(x1, y1, x2, y2);
+            drawContext.drawLine(color, x1, y1, x2, y2, thickness);
         }
     }
 

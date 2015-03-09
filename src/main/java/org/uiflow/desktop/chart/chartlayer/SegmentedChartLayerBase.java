@@ -4,8 +4,10 @@ import org.flowutils.Check;
 import org.flowutils.ClassUtils;
 import org.flowutils.collections.dataseries.Axis;
 import org.flowutils.collections.dataseries.IndexedDataSeries;
+import org.flowutils.drawcontext.DrawContext;
+import org.flowutils.rectangle.MutableRectangle;
+import org.flowutils.rectangle.Rectangle;
 
-import java.awt.*;
 import java.util.Iterator;
 
 /**
@@ -20,7 +22,7 @@ public abstract class SegmentedChartLayerBase<T extends Number, V extends Number
     private int segmentXGap = 2;
     private boolean clipRenderingOfSegment = false;
 
-    private final Rectangle tempSegmentArea = new Rectangle();
+    private final MutableRectangle tempSegmentArea = new MutableRectangle();
 
     protected SegmentedChartLayerBase(Axis<T> horizontalAxis,
                                    Axis<V> verticalAxis) {
@@ -77,7 +79,7 @@ public abstract class SegmentedChartLayerBase<T extends Number, V extends Number
         this.clipRenderingOfSegment = clipRenderingOfSegment;
     }
 
-    @Override public void render(Graphics2D g2, Rectangle renderArea) {
+    @Override public void render(DrawContext drawContext) {
         // Determine number of segments to render
         int numberOfSegments = getNumberOfSegments();
 
@@ -96,33 +98,40 @@ public abstract class SegmentedChartLayerBase<T extends Number, V extends Number
         fetchVisualizationData(getFirstHorizontal(), getLastHorizontal(), stepSize, numberOfSegments);
 
         // Get old clip area so we can restore it if we are going to clip segments
-        final Shape oldClipArea = g2.getClip();
+        // TODO: Implement clipping in DrawContext?
+        /*
+        final Shape oldClipArea = drawContext.getClip();
+        */
 
         // Determine segment start positions and size
-        int x = renderArea.x + firstSegmentXOffset;
-        int y = renderArea.y;
-        int w = (int) ((renderArea.getWidth()) / numberOfSegments) - segmentXGap;
-        int h = renderArea.height;
+        float x = firstSegmentXOffset;
+        float y = 0;
+        float w = ((drawContext.getWidth()) / numberOfSegments) - segmentXGap;
+        float h = drawContext.getHeight();
         for (int i = 0; i < numberOfSegments; i++) {
             // Define area for current segment
-            tempSegmentArea.setBounds(x, y, w, h);
+            tempSegmentArea.set(x, y, x+w-1, y+h-1);
 
             // Restrict rendering to only segment area, if requested.
+            /*
             if (clipRenderingOfSegment) {
-                g2.setClip(tempSegmentArea);
+                drawContext.setClip(tempSegmentArea);
             }
+            */
 
             // Render the segment
-            renderSegment(g2, tempSegmentArea, i, numberOfSegments);
+            renderSegment(drawContext, tempSegmentArea, i, numberOfSegments);
 
             // Move to next segment
             x += w + segmentXGap;
         }
 
         // Restore clipping area
+        /*
         if (clipRenderingOfSegment) {
-            g2.setClip(oldClipArea);
+            drawContext.setClip(oldClipArea);
         }
+        */
     }
 
     /**
@@ -142,7 +151,7 @@ public abstract class SegmentedChartLayerBase<T extends Number, V extends Number
      * @param segmentIndex index of the segment among the visible segments, starting with 0 at the leftmost segment.
      * @param numberOfVisibleSegments total number of visible segments.
      */
-    protected abstract void renderSegment(Graphics2D g2, Rectangle segmentArea, int segmentIndex, int numberOfVisibleSegments);
+    protected abstract void renderSegment(DrawContext drawContext, Rectangle segmentArea, int segmentIndex, int numberOfVisibleSegments);
 
     /**
      * @return number of segments to draw on the screen.

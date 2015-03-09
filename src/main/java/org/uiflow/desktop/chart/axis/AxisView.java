@@ -1,10 +1,12 @@
 package org.uiflow.desktop.chart.axis;
 
 import org.flowutils.collections.dataseries.Axis;
+import org.flowutils.drawcontext.DrawContext;
+import org.flowutils.rectangle.MutableRectangle;
+import org.flowutils.rectangle.Rectangle;
 import org.uiflow.desktop.ui.Renderable;
 import org.uiflow.desktop.ui.UiComponent;
 
-import java.awt.*;
 
 /**
  *
@@ -46,33 +48,33 @@ public interface AxisView<T extends Number> extends Renderable, UiComponent {
 
     T getClosestRoundValue(T minimumValue, T preferredValue, T maximumValue);
 
-    int getPreferredThickness_pixels(Graphics2D g2);
+    float getPreferredThickness_pixels(DrawContext drawContext);
 
     /**
      * @param availableArea the available area for the chart and axis.  Will be modified to exclude the area reserved for the axis.
-     * @param g2 needed to determine size of the labels.
+     * @param drawContext needed to determine size of the labels.
      */
-    void calculateChartArea(Rectangle availableArea, Graphics2D g2);
+    void calculateChartArea(MutableRectangle availableArea, DrawContext drawContext);
 
     /**
      * @param availableArea the available area for the chart and axis.  Will be modified to exclude the area reserved for the axis.
-     * @param chartArea the actual location of the chart.
+     * @param chartArea the actual location of the chart (read only).
      * @param preferredAreaOut the rectangle to write the preferred location and size of this axis view.
-     * @param g2 needed to determine size of the labels.
+     * @param drawContext needed to determine size of the labels.
      */
-    void calculatePreferredArea(Rectangle availableArea, Rectangle chartArea, Rectangle preferredAreaOut, Graphics2D g2);
+    void calculatePreferredArea(MutableRectangle availableArea, Rectangle chartArea, MutableRectangle preferredAreaOut, DrawContext drawContext);
 
-    Color getBackgroundColor();
+    int getBackgroundColor();
 
-    void setBackgroundColor(Color backgroundColor);
+    void setBackgroundColor(int backgroundColor);
 
-    Color getLabelColor();
+    int getLabelColor();
 
-    void setLabelColor(Color labelColor);
+    void setLabelColor(int labelColor);
 
-    Color getTickColor();
+    int getTickColor();
 
-    void setTickColor(Color tickColor);
+    void setTickColor(int tickColor);
 
     void addListener(AxisViewListener listener);
     void removeListener(AxisViewListener listener);

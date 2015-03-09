@@ -1,5 +1,7 @@
 package org.uiflow.desktop.ui;
 
+import org.uiflow.desktop.drawcontext.SwingDrawContext;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -34,16 +36,15 @@ public class RenderableUiComponent extends UiComponentBase {
 
     @Override protected JComponent createUi() {
         return new JPanel() {
-            private final Rectangle area = new Rectangle();
+            private final SwingDrawContext swingDrawContext = new SwingDrawContext();
 
             @Override protected void paintComponent(Graphics g) {
                 if (renderable != null) {
-                    area.x = 0;
-                    area.y = 0;
-                    area.width = getWidth();
-                    area.height = getHeight();
+                    swingDrawContext.setContext(g, this);
 
-                    renderable.render((Graphics2D) g, area);
+                    renderable.render(swingDrawContext);
+
+                    swingDrawContext.clearContext();
                 }
                 else {
                     super.paintComponent(g);
