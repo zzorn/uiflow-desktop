@@ -3,6 +3,7 @@ package org.uiflow.desktop.chart.chartlayer;
 import org.flowutils.MathUtils;
 import org.flowutils.collections.dataseries.Axis;
 import org.flowutils.drawcontext.DrawContext;
+import org.flowutils.drawcontext.marker.Marker;
 import org.flowutils.rectangle.Rectangle;
 
 import java.awt.*;
@@ -17,6 +18,9 @@ public class LineLayer<T extends Number, V extends Number> extends SegmentedChar
     public final VisualizationChannel<T, Color> lineColor;
     public final VisualizationChannel<T, V> lineHeight;
     public final VisualizationChannel<T, Float> thickness;
+    public final VisualizationChannel<T, Marker> markerType;
+    public final VisualizationChannel<T, Float> markerSize;
+    public final VisualizationChannel<T, Color> markerColor;
 
     private float defaultLineThickness = 1;
     private Color defaultColor = Color.DARK_GRAY;
@@ -41,8 +45,9 @@ public class LineLayer<T extends Number, V extends Number> extends SegmentedChar
         lineHeight = addVerticalChannel("Height");
         lineColor = addColorChannel("Color");
         thickness = addFloatChannel("Thickness");
-
-        // TODO: Add marker channel, with marker type?
+        markerType = addChannel("MarkerType", Marker.class);
+        markerSize = addFloatChannel("MarkerSize");
+        markerColor = addColorChannel("MarkerColor");
     }
 
     public float getDefaultLineThickness() {
@@ -111,6 +116,7 @@ public class LineLayer<T extends Number, V extends Number> extends SegmentedChar
 
         if (lineHeight.getVisibleValue(segmentIndex) != null) {
 
+            // Draw line segments
             boolean hasPrevPos = lineHeight.getVisibleValue(segmentIndex - 1) != null;
             boolean hasNextPos = lineHeight.getVisibleValue(segmentIndex + 1) != null;
 
@@ -145,7 +151,36 @@ public class LineLayer<T extends Number, V extends Number> extends SegmentedChar
                 if (hasNextPos) drawLine(drawContext, color, thickness, segmentArea, currentPos, nextPos, x2, x3);
             }
 
-            // TODO: Draw marker
+            // Draw marker
+            final Float markerSizeValue = markerSize.getVisibleValue(segmentIndex);
+            if (markerSizeValue != null && markerSizeValue > 0) {
+                final Marker markerTypeValue = markerType.getVisibleValue(segmentIndex);
+                if (markerTypeValue != null) {
+
+                    // Get marker color, default to line color.
+                    Color markerColorValue = this.markerColor.getVisibleValue(segmentIndex);
+                    if (markerColorValue == null) {
+                        markerColorValue = lineColor.getVisibleValue(segmentIndex, defaultColor);
+                    }
+                    if (markerColorValue != null && markerColorValue.getAlpha() > 0) {
+                        // Determine position for marker
+                        float x = (float) segmentArea.getCenterX();
+                        float relY = (float) lineHeight.getVisibleValueRelativePos(segmentIndex,
+                                                                                getFirstVertical(),
+                                                                                getLastVertical(),
+                                                                                0);
+                        float y = (float) MathUtils.mix(relY, segmentArea.getMaxY(), segmentArea.getMinY());
+
+                        // Scale marker size so that 1 is the default maximum.
+                        float radius = markerSizeValue * (float) segmentArea.getWidth() / 2f;
+
+                        // Render marker
+                        if (radius > 0) {
+                            markerTypeValue.draw(drawContext, x, y, radius, markerColorValue.getRGB());
+                        }
+                    }
+                }
+            }
         }
     }
 

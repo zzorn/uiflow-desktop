@@ -14,6 +14,7 @@ import java.util.Iterator;
  * Base class for chart layers that consist of several vertical segments along the horizontal axis.
  * E.g. barcharts, linecharts, and so on.
  */
+// TODO: Generalize to allow both vertical and horizontal charts, and allow them to be flipped as well
 public abstract class SegmentedChartLayerBase<T extends Number, V extends Number> extends ChartLayerBase<T, V> {
 
     protected static final int DEFAULT_SEGMENT_COUNT = 20;
