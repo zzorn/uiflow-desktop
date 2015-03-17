@@ -233,7 +233,6 @@ public class DefaultChart extends RenderableUiComponent implements Chart {
         final String title = getTitle();
         final Object defaultFont = dc.getDefaultFont();
         float titleHeight = dc.getFontHeight(defaultFont) + 2 * titleMargin;
-        float titleY = dc.getFontHeightBaselineToTop(defaultFont) + titleMargin;
 
         MutableRectangle renderArea = dc.getSize(new MutableRectangle());
         if (!overlayTitle) {

@@ -282,12 +282,11 @@ public final class SwingDrawContext extends DrawContextBase<Color, Font, Image> 
 
         // Calculate alignment
         final float textWidth = getTextWidth(font, text);
-        final float fontHeight = getFontHeight(font);
-        y += getFontHeightBaselineToBottom(font);
+        final float fontHeight = getFontHeightBaselineToTop(font);
 
         g2.drawString(text,
-                      x + MathUtils.mix(alignX, 0, textWidth),
-                      y - MathUtils.mix(alignY, 0, fontHeight));
+                      x + textWidth * MathUtils.mix(alignX, -1f, 0f),
+                      y + fontHeight * MathUtils.mix(alignY, 0f, 1f));
         g2.setFont(oldFont);
     }
 
