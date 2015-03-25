@@ -20,7 +20,7 @@ public class ZoomAndPanGestureHandler extends MouseAdapter implements KeyListene
     private int verticalZoomKey = KeyEvent.VK_CONTROL;
     private int horizontalZoomKey = KeyEvent.VK_SHIFT;
 
-    private int panButton = MouseEvent.BUTTON3;
+    private int panButton = MouseEvent.BUTTON1;
     private boolean panOngoing = false;
 
     private int panPrevX;
