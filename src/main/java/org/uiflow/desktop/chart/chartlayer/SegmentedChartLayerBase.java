@@ -10,6 +10,8 @@ import org.flowutils.rectangle.Rectangle;
 
 import java.util.Iterator;
 
+import static org.flowutils.ClassUtils.*;
+
 /**
  * Base class for chart layers that consist of several vertical segments along the horizontal axis.
  * E.g. barcharts, linecharts, and so on.
@@ -83,19 +85,16 @@ public abstract class SegmentedChartLayerBase<T extends Number, V extends Number
     @Override public void render(DrawContext drawContext) {
         // Determine number of segments to render
         int numberOfSegments = getNumberOfSegments();
+        final int segmentScreenSize = (int) ((drawContext.getWidth()) / numberOfSegments);
 
-        // If we are scrolled to halfway overlap one segment at the start, show the half of the segment after the last segment as well.
-        final int firstSegmentXOffset = getFirstSegmentXOffset();
-        if (firstSegmentXOffset < 0) {
-            numberOfSegments += 1;
-        }
+        final int firstSegmentXOffset = getFirstSegmentXOffset(segmentScreenSize);
 
         // Skip rendering if there is nothing to render
         if (numberOfSegments <= 0) return;
 
         // Allow the implementation to fetch all the data that should be visualized from the visualization channels into temporary arrays.
-        T stepSize = ClassUtils.divNumbers(ClassUtils.subNumbers(getLastHorizontal(), getFirstHorizontal()),
-                                           ClassUtils.convertNumber(numberOfSegments, getFirstHorizontal()));
+        T stepSize = divNumbers(subNumbers(getLastHorizontal(), getFirstHorizontal()),
+                                convertNumber(numberOfSegments, getFirstHorizontal()));
         fetchVisualizationData(getFirstHorizontal(), getLastHorizontal(), stepSize, numberOfSegments);
 
         // Get old clip area so we can restore it if we are going to clip segments
@@ -107,7 +106,7 @@ public abstract class SegmentedChartLayerBase<T extends Number, V extends Number
         // Determine segment start positions and size
         float x = firstSegmentXOffset;
         float y = 0;
-        float w = ((drawContext.getWidth()) / numberOfSegments) - segmentXGap;
+        int w = segmentScreenSize - segmentXGap;
         float h = drawContext.getHeight();
         for (int i = 0; i < numberOfSegments; i++) {
             // Define area for current segment
@@ -168,9 +167,9 @@ public abstract class SegmentedChartLayerBase<T extends Number, V extends Number
             primaryVisualizationChannel.getData() instanceof IndexedDataSeries &&
             ((IndexedDataSeries)primaryVisualizationChannel.getData()).getStepSize() != null) {
 
-            final T visibleRange = ClassUtils.subNumbers(getLastHorizontal(), getFirstHorizontal());
+            final T visibleRange = subNumbers(getLastHorizontal(), getFirstHorizontal());
             final Number stepSize = ((IndexedDataSeries) primaryVisualizationChannel.getData()).getStepSize();
-            final int numberOfVisibleSegments = Math.abs(ClassUtils.divNumbers(visibleRange, stepSize).intValue());
+            final int numberOfVisibleSegments = Math.abs(divNumbers(visibleRange, stepSize).intValue());
             return numberOfVisibleSegments;
         }
         else {
@@ -181,7 +180,26 @@ public abstract class SegmentedChartLayerBase<T extends Number, V extends Number
     /**
      * @return offset from left side of the visible area to the start of the first segment.  May be negative (usually is).
      */
-    protected int getFirstSegmentXOffset() {
+    protected int getFirstSegmentXOffset(int screenStepSize) {
+        /*
+        final VisualizationChannel<T, ?> primaryVisualizationChannel = getPrimaryVisualizationChannel();
+        if (primaryVisualizationChannel != null && primaryVisualizationChannel.getData() != null) {
+            final Number stepSize = ((IndexedDataSeries) primaryVisualizationChannel.getData()).getStepSize();
+            if (stepSize.doubleValue() != 0) {
+
+                Number halfStep = divNumbers(stepSize, convertNumber(2, stepSize));
+                Number excess = modPosNumbers(getFirstHorizontal(), stepSize);
+                final double relativeOffset = excess.doubleValue() / stepSize.doubleValue();
+
+                final int offset = (int) (-screenStepSize * relativeOffset);
+
+                // TODO: Figure out how to offset it to allow it to be scrolled smoothly
+
+                return 0;
+            }
+        }
+        */
+
         return 0;
     }
 
