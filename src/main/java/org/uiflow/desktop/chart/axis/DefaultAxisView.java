@@ -1,11 +1,14 @@
 package org.uiflow.desktop.chart.axis;
 
 import org.flowutils.Check;
+import org.flowutils.ClassUtils;
 import org.flowutils.MathUtils;
 import org.flowutils.collections.dataseries.Axis;
 import org.flowutils.drawcontext.DrawContext;
 import org.flowutils.rectangle.MutableRectangle;
 import org.flowutils.rectangle.Rectangle;
+import org.flowutils.zoomandpan.ZoomAndPannable;
+import org.flowutils.zoomandpan.ZoomAndPannableListener;
 import org.uiflow.desktop.ui.RenderableUiComponent;
 
 import java.awt.*;
@@ -330,4 +333,25 @@ public class DefaultAxisView<T extends Number> extends RenderableUiComponent imp
         }
     }
 
+    @Override public void onZoom(ZoomAndPannable zoomAndPannable, double zoomX, double zoomY) {
+        double zoom = orientation.isHorizontal() ? zoomX : zoomY;
+
+        // Scale the first and last visible by the amount zoom
+        final T range = ClassUtils.subNumbers(lastVisible, firstVisible);
+        final T newRange = ClassUtils.convertNumber(range.doubleValue() * zoom, axis.getType());
+        final T delta = ClassUtils.subNumbers(newRange, range);
+        final T deltaDiv2 = ClassUtils.divNumbers(delta, ClassUtils.convertNumber(2.0, axis.getType()));
+        setVisibleRange(ClassUtils.subNumbers(firstVisible, deltaDiv2),
+                        ClassUtils.addNumbers(lastVisible, deltaDiv2));
+    }
+
+    @Override public void onPan(ZoomAndPannable zoomAndPannable, double relativeDeltaX, double relativeDeltaY) {
+        double relativeDelta = orientation.isHorizontal() ? relativeDeltaX : relativeDeltaY;
+
+        // Move the first and last visible by the amount panned
+        final T range = ClassUtils.subNumbers(lastVisible, firstVisible);
+        final T delta = ClassUtils.convertNumber(range.doubleValue() * relativeDelta, axis.getType());
+        setVisibleRange(ClassUtils.addNumbers(firstVisible, delta),
+                        ClassUtils.addNumbers(lastVisible, delta));
+    }
 }

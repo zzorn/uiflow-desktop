@@ -5,12 +5,16 @@ import org.flowutils.collections.dataseries.Axis;
 import org.flowutils.collections.dataseries.TimeAxis;
 import org.flowutils.drawcontext.DrawContext;
 import org.flowutils.rectangle.MutableRectangle;
+import org.flowutils.zoomandpan.DefaultZoomAndPannable;
 import org.uiflow.desktop.chart.axis.*;
 import org.uiflow.desktop.chart.chartlayer.ChartLayer;
-import org.uiflow.desktop.drawcontext.SwingDrawContext;
+import org.uiflow.desktop.ui.Renderable;
 import org.uiflow.desktop.ui.RenderableUiComponent;
+import org.uiflow.desktop.zoomandpan.ZoomAndPanGestureHandler;
 
+import javax.swing.*;
 import java.awt.*;
+import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -21,7 +25,7 @@ import static org.flowutils.Check.notNull;
 /**
  *
  */
-public class DefaultChart extends RenderableUiComponent implements Chart {
+public class DefaultChart extends RenderableUiComponent implements Chart, Renderable {
 
     private int backgroundColor = new Color(0,0,0).getRGB();
     private int titleColor = new Color(255, 255, 255).getRGB();
@@ -45,13 +49,26 @@ public class DefaultChart extends RenderableUiComponent implements Chart {
         }
     };
 
+    /*
+    private JPanel mainPanel;
+    private final RenderableUiComponent chartView = new RenderableUiComponent(new Renderable() {
+        @Override public void render(DrawContext drawContext) {
+            renderChart(drawContext);
+        }
+    });
+    */
+
+    private final DefaultZoomAndPannable zoomAndPannable = new DefaultZoomAndPannable();
+    private final ZoomAndPanGestureHandler zoomAndPanGestureHandler = new ZoomAndPanGestureHandler(zoomAndPannable);
+
     public DefaultChart() {
         this(null);
     }
 
     public DefaultChart(String title) {
-        setRenderable(this);
         setTitle(title);
+
+        setRenderable(this);
     }
 
     public final String getTitle() {
@@ -177,6 +194,13 @@ public class DefaultChart extends RenderableUiComponent implements Chart {
 
         axisView.addListener(axisViewListener);
 
+        // Have the axis listen to zoom and pan events.
+        zoomAndPannable.addListener(axisView);
+
+        /*
+        rebuildUi();
+        */
+
         return axisView;
     }
 
@@ -184,6 +208,13 @@ public class DefaultChart extends RenderableUiComponent implements Chart {
         final AxisView removedAxisView = axisViews.remove(axisView.getAxis());
         if (removedAxisView != null) {
             removedAxisView.removeListener(axisViewListener);
+
+            // Stop the axis from listening to zoom and pan events.
+            zoomAndPannable.removeListener(axisView);
+
+            /*
+            rebuildUi();
+            */
         }
     }
 
@@ -221,7 +252,51 @@ public class DefaultChart extends RenderableUiComponent implements Chart {
         this.backgroundColor = backgroundColor;
     }
 
+    /*
+    @Override protected JComponent createUi() {
+        mainPanel = new JPanel(new BorderLayout());
+
+        rebuildUi();
+
+        return mainPanel;
+    }
+
+    private void rebuildUi() {
+        if (mainPanel != null) {
+            mainPanel.removeAll();
+
+            mainPanel.add(chartView.getUi(), BorderLayout.CENTER);
+
+            // Add axis to the sides of the view
+            for (AxisView axisView : axisViews.values()) {
+                mainPanel.add(axisView.getUi(), axisView.getOrientation().getBorderLayoutConstraint());
+            }
+        }
+    }
+    */
+
     @Override public void render(DrawContext dc) {
+
+
+
+        /* TODO: Figure out how to pan and zoom values, when the ranges for them are not immediately accessible here
+        final double startX = zoomAndPannable.getVisibleWorldArea().getMinX();
+        final double endX = zoomAndPannable.getVisibleWorldArea().getMaxX();
+        final double startY = zoomAndPannable.getVisibleWorldArea().getMinY();
+        final double endY = zoomAndPannable.getVisibleWorldArea().getMaxY();
+        for (AxisView axisView : axisViews.values()) {
+            if (axisView.getOrientation().isHorizontal()) {
+
+                axisView.setFirstVisible(ClassUtils.convertNumber(startX, axisView.getAxis().getType()));
+                axisView.setLastVisible(ClassUtils.convertNumber(endX, axisView.getAxis().getType()));
+            }
+            else {
+                axisView.setFirstVisible(ClassUtils.convertNumber(startY, axisView.getAxis().getType()));
+                axisView.setLastVisible(ClassUtils.convertNumber(endY, axisView.getAxis().getType()));
+            }
+        }
+        */
+
 
         // Smooth edges using anti-aliasing
         final boolean oldAntialias = dc.setAntialias(true);
@@ -271,5 +346,23 @@ public class DefaultChart extends RenderableUiComponent implements Chart {
         }
 
         dc.setAntialias(oldAntialias);
+    }
+
+    @Override protected JComponent createUi() {
+        final JComponent ui = super.createUi();
+
+        /*
+        // Listen to resizes
+        ui.addComponentListener(new ComponentAdapter() {
+            @Override public void componentResized(ComponentEvent e) {
+                zoomAndPannable.updateViewSize(ui.getWidth(), ui.getHeight());
+            }
+        });
+        */
+
+        // Listen to zoom and pan gestures
+        zoomAndPanGestureHandler.setComponentToListenTo(ui);
+
+        return ui;
     }
 }

@@ -4,6 +4,8 @@ import org.flowutils.MathUtils;
 import org.flowutils.rectangle.MutableRectangle;
 import org.flowutils.rectangle.Rectangle;
 
+import java.awt.*;
+
 
 /**
  *
@@ -95,6 +97,21 @@ public enum AxisOrientation {
 
         if (preferredAreaOut != null) {
             preferredAreaOut.set(x, y, x+w, y+h);
+        }
+    }
+
+    public String getBorderLayoutConstraint() {
+        switch (this) {
+            case HORIZONTAL_TOP:
+                return BorderLayout.NORTH;
+            case HORIZONTAL_BOTTOM:
+                return BorderLayout.SOUTH;
+            case VERTICAL_LEFT:
+                return BorderLayout.WEST;
+            case VERTICAL_RIGHT:
+                return BorderLayout.EAST;
+            default:
+                throw new IllegalStateException("Unknown AxisOrientation " + this);
         }
     }
 }

@@ -128,7 +128,7 @@ public class ChartExample {
         globalWarmingLayer.thickness.setData(createSinDataSeries(timeAxis, 100 * YEARS, 3f, 5f));
         globalWarmingLayer.markerType.setData(new ConstantDataSeries<Long, Marker>(timeAxis, DefaultMarkers.DIAMOND));
         globalWarmingLayer.markerSize.setData(createSinDataSeries(timeAxis, 33*YEARS, 0.3f, 0.6f));
-        globalWarmingLayer.markerColor.setData(DataSeriesConverter.create(createSinDataSeriesDouble(timeAxis, 33*YEARS, 0.3f, 0.5f), ColorGradients.RAINBOW));
+        globalWarmingLayer.markerColor.setData(createSinDataSeriesDouble(timeAxis, 33*YEARS, 0.3f, 0.5f), ColorGradients.RAINBOW);
 
         new SimpleFrame("Chart Example", chart.getUi());
 

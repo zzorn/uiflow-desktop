@@ -4,6 +4,7 @@ import org.flowutils.collections.dataseries.Axis;
 import org.flowutils.drawcontext.DrawContext;
 import org.flowutils.rectangle.MutableRectangle;
 import org.flowutils.rectangle.Rectangle;
+import org.flowutils.zoomandpan.ZoomAndPannableListener;
 import org.uiflow.desktop.ui.Renderable;
 import org.uiflow.desktop.ui.UiComponent;
 
@@ -15,7 +16,7 @@ import org.uiflow.desktop.ui.UiComponent;
 // Scrolling could work by the chart sending pan and zoom events here?  Or maybe the axis could have an own panel that listens to scrolls.
 // TODO: Add methods to specify minimum and maximum allowed axis values
 // TODO: Have some flag that indicates whether to track the maximum axis value (=show latest values)
-public interface AxisView<T extends Number> extends Renderable, UiComponent {
+public interface AxisView<T extends Number> extends Renderable, UiComponent, ZoomAndPannableListener {
 
     Axis<T> getAxis();
 

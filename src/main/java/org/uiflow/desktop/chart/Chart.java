@@ -13,7 +13,7 @@ import java.awt.*;
 /**
  *
  */
-public interface Chart extends Renderable, UiComponent {
+public interface Chart extends UiComponent {
 
     <T extends Number> AxisView<T> addAxis(String axisName, Class<T> axisType, AxisOrientation orientation);
     <T extends Number> AxisView<T> addAxis(String axisName, Class<T> axisType, AxisOrientation orientation, T firstVisible, T lastVisible);
