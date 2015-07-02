@@ -7,7 +7,7 @@ import java.awt.*;
 import static org.flowutils.MathUtils.*;
 
 /**
- * Color related utilities.
+ * Color related utility functions.
  */
 public final class ColorUtils {
 
