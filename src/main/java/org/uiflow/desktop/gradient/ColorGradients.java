@@ -8,8 +8,6 @@ import java.awt.*;
  */
 public final class ColorGradients {
 
-    public static final ColorGradient SPECTRUM = createSpectrumGradient();
-
     public static final ColorGradient RAINBOW = new ColorGradient(
             new Color(200, 0, 130),
             new Color(255, 0, 0),
@@ -47,21 +45,24 @@ public final class ColorGradients {
             new Color(50, 0, 230)
     ).makeReadOnly();
 
-    public static ColorGradient createSpectrumGradient() {
-        final ColorGradient gradient = new ColorGradient();
-        gradient.addColor(0.0, 0, 0, 0);
-        gradient.addColor(0.1, 1, 0, 0);
-        gradient.addColor(0.2, 1, 0.5, 0);
-        gradient.addColor(0.3, 1, 1, 0);
-        gradient.addColor(0.4, 0.5, 1, 0);
-        gradient.addColor(0.5, 0, 1, 0);
-        gradient.addColor(0.6, 0, 1, 0.5);
-        gradient.addColor(0.7, 0, 1, 1);
-        gradient.addColor(0.8, 0, 0.5, 1);
-        gradient.addColor(0.9, 0, 0, 1);
-        gradient.addColor(1.0, 0.5, 0, 1);
-        return gradient;
-    }
+    public static final ColorGradient GREEN_TO_RED = new ColorGradient(
+            new Color(0, 220, 0),
+            new Color(170, 230, 0),
+            new Color(250, 230, 0),
+            new Color(245, 170, 0),
+            new Color(240, 0, 0)
+    ).makeReadOnly();
+
+    public static final ColorGradient COMPUTER_COLORS = new ColorGradient(
+            new Color(0, 0, 0),
+            new Color(255, 0, 0),
+            new Color(255, 255, 0),
+            new Color(0, 255, 0),
+            new Color(0, 255, 255),
+            new Color(0, 0, 255),
+            new Color(255, 0, 255),
+            new Color(255, 255, 255)
+    ).makeReadOnly();
 
     private ColorGradients() {
     }
