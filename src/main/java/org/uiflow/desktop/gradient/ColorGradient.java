@@ -1,12 +1,15 @@
 package org.uiflow.desktop.gradient;
 
 
+import org.uiflow.desktop.ColorUtils;
+
 import java.awt.*;
 import java.util.Map;
 import java.util.TreeMap;
 
 import static org.flowutils.MathUtils.map;
 import static org.flowutils.MathUtils.mix;
+import static org.uiflow.desktop.ColorUtils.mixColors;
 
 /**
  * Simple Swing color gradient.
@@ -104,12 +107,12 @@ public class ColorGradient extends ColorFunctionBase {
         final Map.Entry<Double, Color> floor = colors.floorEntry(value);
         final Map.Entry<Double, Color> ceiling = colors.ceilingEntry(value);
 
-        if (floor == null && ceiling == null) return mixColor(mixAmount, baseColor, Color.black);
-        else if (floor == null) return mixColor(mixAmount, baseColor, ceiling.getValue());
-        else if (ceiling == null) return mixColor(mixAmount, baseColor, floor.getValue());
+        if (floor == null && ceiling == null) return mixColors(mixAmount, baseColor, Color.black);
+        else if (floor == null) return mixColors(mixAmount, baseColor, ceiling.getValue());
+        else if (ceiling == null) return mixColors(mixAmount, baseColor, floor.getValue());
         else {
-            if (value == floor.getKey()) return mixColor(mixAmount, baseColor, floor.getValue());
-            else if (value == ceiling.getKey()) return mixColor(mixAmount, baseColor, ceiling.getValue());
+            if (value == floor.getKey()) return mixColors(mixAmount, baseColor, floor.getValue());
+            else if (value == ceiling.getKey()) return mixColors(mixAmount, baseColor, ceiling.getValue());
             else {
                 double t = map(value, floor.getKey(), ceiling.getKey(), 0, 1);
                 final Color fCol = floor.getValue();
@@ -126,17 +129,6 @@ public class ColorGradient extends ColorFunctionBase {
 
     @Override public Color colorForValue(double value) {
         return getColor(value);
-    }
-
-    private Color mixColor(double t, Color base, Color top) {
-        if (t == 0) return base;
-        else if (t == 1) return top;
-        else return new Color(
-                (int) mix(t, base.getRed(), top.getRed()),
-                (int) mix(t, base.getGreen(), top.getGreen()),
-                (int) mix(t, base.getBlue(), top.getBlue()),
-                (int) mix(t, base.getAlpha(), top.getAlpha())
-        );
     }
 
     private int mixComponent(double colorAmount, double t, final int base, final int floorComp, final int ceilingComp) {
